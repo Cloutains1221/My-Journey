@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { RATING_LABELS } from "@/lib/types";
-import type { Trip, Photo } from "@/lib/types";
+import { RATING_LABELS, AGREEMENT_LABELS, DESIRE_LABELS } from "@/lib/types";
+import type { Trip, Photo, AgreementVote, DesireVote } from "@/lib/types";
 
 export default function AdminClient() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -14,6 +14,8 @@ export default function AdminClient() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [uploading, setUploading] = useState(false);
   const [manageMode, setManageMode] = useState(false);
+  const [commentsMode, setCommentsMode] = useState(false);
+  const [comments, setComments] = useState<{ agreements: (AgreementVote & { trips?: { title: string } | null })[], desires: (DesireVote & { trips?: { title: string } | null })[] }>({ agreements: [], desires: [] });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleLogin(e: React.FormEvent) {
@@ -113,6 +115,33 @@ export default function AdminClient() {
     }
   }
 
+  const fetchComments = useCallback(async () => {
+    const res = await fetch("/api/admin/votes");
+    if (res.ok) setComments(await res.json());
+    else setAuthenticated(false);
+  }, []);
+
+  useEffect(() => { if (authenticated && commentsMode) fetchComments(); }, [authenticated, commentsMode, fetchComments]);
+
+  async function handleCommentDelete(type: "agreement" | "desire", id: string) {
+    if (!confirm("删除这条评论？")) return;
+    const res = await fetch(`/api/admin/votes/${type}/${id}`, { method: "DELETE" });
+    if (res.ok) { setMessage("评论已删除"); fetchComments(); }
+    else { const data = await res.json(); setError(data.error || "删除失败"); }
+  }
+
+  function mergeComments() {
+    const all: { id: string; type: "agreement" | "desire"; nickname: string; label: string; comment: string | null; time: string; tripTitle: string }[] = [];
+    comments.agreements.forEach((v) =>
+      all.push({ id: v.id, type: "agreement", nickname: v.nickname, label: AGREEMENT_LABELS[v.agreement], comment: v.comment, time: v.created_at, tripTitle: (v as any).trips?.title || "—" })
+    );
+    comments.desires.forEach((v) =>
+      all.push({ id: v.id, type: "desire", nickname: v.nickname, label: DESIRE_LABELS[v.desire_level], comment: v.comment, time: v.created_at, tripTitle: (v as any).trips?.title || "—" })
+    );
+    all.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+    return all;
+  }
+
   const emptyTrip: Partial<Trip> = {
     title: "", slug: "", date: "", location: "", latitude: 35, longitude: 115,
     content: "", rating: 3, cover_image: "",
@@ -145,10 +174,13 @@ export default function AdminClient() {
       <aside className="w-52 p-6 border-r border-border flex-shrink-0">
         <p className="text-sm font-bold text-white mb-6">📋 管理面板</p>
         <nav className="flex flex-col gap-4 text-sm">
-          <button onClick={() => { setEditing(null); setMessage(""); setManageMode(false); }} className="text-left text-white font-semibold">
+          <button onClick={() => { setEditing(null); setMessage(""); setManageMode(false); setCommentsMode(false); }} className={`text-left transition-colors ${!commentsMode ? "text-white font-semibold" : "text-text-muted hover:text-white"}`}>
             旅程列表
           </button>
-          <button onClick={() => { setEditing(emptyTrip); setManageMode(false); }} className="text-left text-text-muted hover:text-white transition-colors">
+          <button onClick={() => { setEditing(null); setManageMode(false); setCommentsMode(true); setMessage(""); }} className={`text-left transition-colors ${commentsMode ? "text-white font-semibold" : "text-text-muted hover:text-white"}`}>
+            评论管理
+          </button>
+          <button onClick={() => { setEditing(emptyTrip); setManageMode(false); setCommentsMode(false); }} className="text-left text-text-muted hover:text-white transition-colors">
             + 新建旅程
           </button>
         </nav>
@@ -158,14 +190,53 @@ export default function AdminClient() {
         {message && <p className="text-sm text-green-400 mb-4">{message}</p>}
         {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
 
-        {!editing ? (
+        {commentsMode ? (
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-white">评论管理</h2>
+                <p className="text-sm text-text-muted">共 {mergeComments().length} 条评论</p>
+              </div>
+            </div>
+            {mergeComments().length === 0 ? (
+              <p className="text-sm text-text-muted py-10 text-center">暂无访客评论</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {mergeComments().map((item) => (
+                  <div key={`${item.type}-${item.id}`} className="flex items-center gap-4 p-4 bg-surface rounded-xl border border-border">
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                      item.type === "agreement" ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
+                    }`}>
+                      {item.type === "agreement" ? "✓" : "🔥"}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-sm font-semibold text-white">{item.nickname}</span>
+                        <span className="text-xs text-text-muted">· {item.label}</span>
+                        <span className="text-xs text-text-muted/50">· {item.tripTitle}</span>
+                      </div>
+                      {item.comment && <p className="text-xs text-text-secondary truncate">{item.comment}</p>}
+                      <p className="text-[10px] text-text-muted/40 mt-0.5">{new Date(item.time).toLocaleString("zh-CN")}</p>
+                    </div>
+                    <button
+                      onClick={() => handleCommentDelete(item.type, item.id)}
+                      className="text-xs text-red-400/60 hover:text-red-400 flex-shrink-0"
+                    >
+                      删除
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : !editing ? (
           <>
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-xl font-bold text-white">我的旅程</h2>
                 <p className="text-sm text-text-muted">共 {trips.length} 段旅程</p>
               </div>
-              <button onClick={() => { setEditing(emptyTrip); setManageMode(false); }} className="px-6 py-2.5 bg-white text-bg rounded-lg text-sm font-semibold hover:bg-gray-200">
+              <button onClick={() => { setEditing(emptyTrip); setManageMode(false); setCommentsMode(false); }} className="px-6 py-2.5 bg-white text-bg rounded-lg text-sm font-semibold hover:bg-gray-200">
                 + 新建旅程
               </button>
             </div>
