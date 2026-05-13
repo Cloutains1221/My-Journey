@@ -23,6 +23,7 @@ export interface Photo {
   sort_order: number;
   width: number | null;
   height: number | null;
+  created_at: string;
 }
 
 export interface AgreementVote {
