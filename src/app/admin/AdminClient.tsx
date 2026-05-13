@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { RATING_LABELS } from "@/lib/types";
-import type { Trip } from "@/lib/types";
+import type { Trip, Photo } from "@/lib/types";
 
 export default function AdminClient() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -11,6 +11,10 @@ export default function AdminClient() {
   const [editing, setEditing] = useState<Partial<Trip> | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [manageMode, setManageMode] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -31,6 +35,17 @@ export default function AdminClient() {
 
   useEffect(() => { if (authenticated) fetchTrips(); }, [authenticated, fetchTrips]);
 
+  const fetchPhotos = useCallback(async (tripId: string) => {
+    const { supabase } = await import("@/lib/supabase");
+    const { data } = await supabase.from("photos").select("*").eq("trip_id", tripId).order("sort_order");
+    if (data) setPhotos(data as Photo[]);
+  }, []);
+
+  useEffect(() => {
+    if (editing?.id) fetchPhotos(editing.id);
+    else setPhotos([]);
+  }, [editing, fetchPhotos]);
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!editing) return;
@@ -38,18 +53,21 @@ export default function AdminClient() {
     const isNew = !tripData.id;
     const url = isNew ? "/api/admin/trips" : `/api/admin/trips/${tripData.id}`;
     const method = isNew ? "POST" : "PUT";
-    if (isNew) {
-      tripData.slug = (tripData.title || "new-trip").replace(/\s+/g, "-").toLowerCase();
-    }
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(tripData),
     });
     if (res.ok) {
-      setMessage("保存成功");
-      setEditing(null);
+      const saved = await res.json();
+      setMessage(isNew ? "旅程已创建，现在可以上传照片" : "保存成功");
       fetchTrips();
+      if (isNew && saved?.id) {
+        setEditing({ ...editing, id: saved.id });
+        setManageMode(true);
+      } else {
+        setEditing(null);
+      }
     } else {
       const data = await res.json();
       setError(data.error || "保存失败");
@@ -63,8 +81,40 @@ export default function AdminClient() {
     else setError("删除失败");
   }
 
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !editing?.id) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("tripId", editing.id);
+    Array.from(files).forEach((f) => formData.append("files", f));
+
+    const res = await fetch("/api/admin/photos", { method: "POST", body: formData });
+    if (res.ok) {
+      setMessage("照片上传成功");
+      fetchPhotos(editing.id);
+    } else {
+      const data = await res.json();
+      setError(data.error || "上传失败");
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handlePhotoDelete(photoId: string) {
+    if (!confirm("删除这张照片？")) return;
+    const res = await fetch(`/api/admin/photos/${photoId}`, { method: "DELETE" });
+    if (res.ok) {
+      setMessage("照片已删除");
+      setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+    } else {
+      const data = await res.json();
+      setError(data.error || "删除失败");
+    }
+  }
+
   const emptyTrip: Partial<Trip> = {
-    title: "", date: "", location: "", latitude: 35, longitude: 115,
+    title: "", slug: "", date: "", location: "", latitude: 35, longitude: 115,
     content: "", rating: 3, cover_image: "",
   };
 
@@ -95,10 +145,10 @@ export default function AdminClient() {
       <aside className="w-52 p-6 border-r border-border flex-shrink-0">
         <p className="text-sm font-bold text-white mb-6">📋 管理面板</p>
         <nav className="flex flex-col gap-4 text-sm">
-          <button onClick={() => { setEditing(null); setMessage(""); }} className="text-left text-white font-semibold">
+          <button onClick={() => { setEditing(null); setMessage(""); setManageMode(false); }} className="text-left text-white font-semibold">
             旅程列表
           </button>
-          <button onClick={() => setEditing(emptyTrip)} className="text-left text-text-muted hover:text-white transition-colors">
+          <button onClick={() => { setEditing(emptyTrip); setManageMode(false); }} className="text-left text-text-muted hover:text-white transition-colors">
             + 新建旅程
           </button>
         </nav>
@@ -115,7 +165,7 @@ export default function AdminClient() {
                 <h2 className="text-xl font-bold text-white">我的旅程</h2>
                 <p className="text-sm text-text-muted">共 {trips.length} 段旅程</p>
               </div>
-              <button onClick={() => setEditing(emptyTrip)} className="px-6 py-2.5 bg-white text-bg rounded-lg text-sm font-semibold hover:bg-gray-200">
+              <button onClick={() => { setEditing(emptyTrip); setManageMode(false); }} className="px-6 py-2.5 bg-white text-bg rounded-lg text-sm font-semibold hover:bg-gray-200">
                 + 新建旅程
               </button>
             </div>
@@ -130,81 +180,157 @@ export default function AdminClient() {
                     <p className="text-xs text-text-muted">{trip.date} · {RATING_LABELS[trip.rating]}</p>
                   </div>
                   <button onClick={() => setEditing(trip)} className="text-xs text-text-muted hover:text-white">编辑</button>
+                  <button onClick={() => { setEditing(trip); setManageMode(true); }} className="text-xs text-blue-400/60 hover:text-blue-400">照片</button>
                   <button onClick={() => handleDelete(trip.id)} className="text-xs text-red-400/60 hover:text-red-400">删除</button>
                 </div>
               ))}
             </div>
           </>
         ) : (
-          <form onSubmit={handleSave} className="max-w-xl flex flex-col gap-5">
-            <h3 className="text-lg font-bold text-white">{editing.id ? "编辑旅程" : "新建旅程"}</h3>
+          <div className="max-w-2xl">
+            <form onSubmit={handleSave} className="flex flex-col gap-5">
+              <h3 className="text-lg font-bold text-white">{editing.id ? "编辑旅程" : "新建旅程"}</h3>
 
-            <div>
-              <label className="text-xs text-text-muted mb-1.5 block">标题</label>
-              <input value={editing.title || ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })}
-                className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/20" />
-            </div>
-
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <label className="text-xs text-text-muted mb-1.5 block">日期</label>
-                <input value={editing.date || ""} onChange={(e) => setEditing({ ...editing, date: e.target.value })}
-                  type="date" className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/20" />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs text-text-muted mb-1.5 block">地点</label>
-                <input value={editing.location || ""} onChange={(e) => setEditing({ ...editing, location: e.target.value })}
-                  placeholder="城市, 国家" className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none focus:border-white/20" />
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <label className="text-xs text-text-muted mb-1.5 block">纬度</label>
-                <input type="number" step="0.01" value={editing.latitude || ""} onChange={(e) => setEditing({ ...editing, latitude: parseFloat(e.target.value) })}
+              <div>
+                <label className="text-xs text-text-muted mb-1.5 block">标题</label>
+                <input value={editing.title || ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })}
                   className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/20" />
               </div>
-              <div className="flex-1">
-                <label className="text-xs text-text-muted mb-1.5 block">经度</label>
-                <input type="number" step="0.01" value={editing.longitude || ""} onChange={(e) => setEditing({ ...editing, longitude: parseFloat(e.target.value) })}
-                  className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/20" />
+
+              <div>
+                <label className="text-xs text-text-muted mb-1.5 block">URL 标识（留空则自动生成）</label>
+                <input value={editing.slug || ""} onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
+                  placeholder="例如：my-trip-to-beijing"
+                  className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none focus:border-white/20" />
               </div>
-            </div>
 
-            <div>
-              <label className="text-xs text-text-muted mb-1.5 block">封面图片 URL</label>
-              <input value={editing.cover_image || ""} onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })}
-                placeholder="https://..." className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none focus:border-white/20" />
-            </div>
-
-            <div>
-              <label className="text-xs text-text-muted mb-1.5 block">评级</label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((v) => (
-                  <button key={v} type="button" onClick={() => setEditing({ ...editing, rating: v })}
-                    className={`px-4 py-2 rounded-full text-sm border transition-all ${
-                      editing.rating === v
-                        ? "bg-red-900/30 border-red-500/50 text-red-300 font-semibold"
-                        : "bg-white/5 border-border text-white/40"
-                    }`}
-                  >{RATING_LABELS[v]}</button>
-                ))}
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="text-xs text-text-muted mb-1.5 block">日期</label>
+                  <input value={editing.date || ""} onChange={(e) => setEditing({ ...editing, date: e.target.value })}
+                    type="date" className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/20" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-text-muted mb-1.5 block">地点</label>
+                  <input value={editing.location || ""} onChange={(e) => setEditing({ ...editing, location: e.target.value })}
+                    placeholder="城市, 国家" className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none focus:border-white/20" />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="text-xs text-text-muted mb-1.5 block">文字内容</label>
-              <textarea value={editing.content || ""} onChange={(e) => setEditing({ ...editing, content: e.target.value })}
-                rows={8} className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/20 resize-none" />
-            </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="text-xs text-text-muted mb-1.5 block">纬度</label>
+                  <input type="number" step="0.01" value={editing.latitude || ""} onChange={(e) => setEditing({ ...editing, latitude: parseFloat(e.target.value) })}
+                    className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/20" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-text-muted mb-1.5 block">经度</label>
+                  <input type="number" step="0.01" value={editing.longitude || ""} onChange={(e) => setEditing({ ...editing, longitude: parseFloat(e.target.value) })}
+                    className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/20" />
+                </div>
+              </div>
 
-            <div className="flex gap-3 justify-end">
-              <button type="button" onClick={() => setEditing(null)}
-                className="px-7 py-2.5 bg-white/5 border border-border rounded-lg text-sm text-white/50 hover:text-white">取消</button>
-              <button type="submit"
-                className="px-7 py-2.5 bg-white text-bg rounded-lg text-sm font-semibold hover:bg-gray-200">保存旅程</button>
-            </div>
-          </form>
+              <div>
+                <label className="text-xs text-text-muted mb-1.5 block">封面图片 URL</label>
+                <input value={editing.cover_image || ""} onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })}
+                  placeholder="https://... 或从下方照片中点击「设为封面」"
+                  className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none focus:border-white/20" />
+                {editing.cover_image && (
+                  <img src={editing.cover_image} className="mt-2 w-32 h-20 object-cover rounded-lg border border-border" />
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs text-text-muted mb-1.5 block">评级</label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((v) => (
+                    <button key={v} type="button" onClick={() => setEditing({ ...editing, rating: v })}
+                      className={`px-4 py-2 rounded-full text-sm border transition-all ${
+                        editing.rating === v
+                          ? "bg-red-900/30 border-red-500/50 text-red-300 font-semibold"
+                          : "bg-white/5 border-border text-white/40"
+                      }`}
+                    >{RATING_LABELS[v]}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-text-muted mb-1.5 block">文字内容</label>
+                <textarea value={editing.content || ""} onChange={(e) => setEditing({ ...editing, content: e.target.value })}
+                  rows={8} className="w-full bg-white/5 border border-border rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/20 resize-none" />
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button type="button" onClick={() => { setEditing(null); setManageMode(false); }}
+                  className="px-7 py-2.5 bg-white/5 border border-border rounded-lg text-sm text-white/50 hover:text-white">取消</button>
+                <button type="submit"
+                  className="px-7 py-2.5 bg-white text-bg rounded-lg text-sm font-semibold hover:bg-gray-200">保存旅程</button>
+              </div>
+            </form>
+
+            {/* Photo Management Section */}
+            {editing.id && (
+              <div className="mt-10 pt-8 border-t border-border">
+                <h3 className="text-lg font-bold text-white mb-4">📷 旅程照片 · {photos.length} 张</h3>
+
+                {/* Existing photos grid */}
+                {photos.length > 0 && (
+                  <div className="grid grid-cols-4 gap-3 mb-6">
+                    {photos.map((photo) => (
+                      <div key={photo.id} className="relative group aspect-square rounded-lg overflow-hidden bg-white/5">
+                        <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          <button type="button"
+                            onClick={() => setEditing({ ...editing, cover_image: photo.url })}
+                            className="px-2 py-1 rounded bg-white/90 text-black text-xs font-semibold hover:bg-white"
+                          >
+                            设为封面
+                          </button>
+                          <button
+                            onClick={() => handlePhotoDelete(photo.id)}
+                            className="w-6 h-6 rounded-full bg-red-500/80 text-white text-xs flex items-center justify-center hover:bg-red-500"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload area */}
+                <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-white/20 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0 && fileInputRef.current) {
+                      const dt = new DataTransfer();
+                      Array.from(files).forEach((f) => dt.items.add(f));
+                      fileInputRef.current.files = dt.files;
+                      fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }));
+                    }
+                  }}
+                >
+                  <div className="text-3xl mb-2">📷</div>
+                  <p className="text-sm text-text-muted">
+                    {uploading ? "上传中..." : "拖拽图片到此处或点击上传"}
+                  </p>
+                  <p className="text-xs text-text-muted/50 mt-1">支持 JPG, PNG, WebP · 可批量选择</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handlePhotoUpload}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </main>
     </div>

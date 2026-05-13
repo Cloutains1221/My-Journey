@@ -26,12 +26,10 @@ export default function MapPage() {
   }, []);
 
   useEffect(() => {
-    if (!mapRef.current || trips.length === 0) return;
+    if (!mapRef.current) return;
 
     import("leaflet").then((L) => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-      }
+      if (mapInstanceRef.current) return;
 
       const map = L.map(mapRef.current!, {
         center: [35, 115],

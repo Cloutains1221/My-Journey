@@ -20,21 +20,24 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
   // Initialize map once
   useEffect(() => {
     if (!mapRef.current) return;
-    const L = (window as any).L; // Leaflet attaches to window when imported
-    if (!L) return;
 
-    const map = L.map(mapRef.current, {
-      center: [35, 115], zoom: 4,
-      scrollWheelZoom: false, dragging: true,
-      zoomControl: false, attributionControl: false,
+    import("leaflet").then((L) => {
+      if (!mapRef.current || mapInstanceRef.current) return;
+
+      const map = L.map(mapRef.current, {
+        center: [35, 115], zoom: 4,
+        scrollWheelZoom: false, dragging: true,
+        zoomControl: false, attributionControl: false,
+      });
+
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+      }).addTo(map);
+
+      mapInstanceRef.current = map;
     });
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-      maxZoom: 19,
-    }).addTo(map);
-
-    mapInstanceRef.current = map;
-    return () => { map.remove(); mapInstanceRef.current = null; };
+    return () => { mapInstanceRef.current?.remove(); mapInstanceRef.current = null; };
   }, []);
 
   // Update markers when trips change
@@ -88,13 +91,17 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
   return (
     <div className="relative w-full h-[500px] overflow-hidden">
       <div ref={mapRef} className="w-full h-full" role="img" aria-label="旅行足迹地图" />
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center z-[1000] pointer-events-none">
-        <h1 className="text-3xl font-bold text-white drop-shadow-[0_0_40px_rgba(0,0,0,0.8)]">
-          探索人生的版图
+      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-bg via-bg/60 to-transparent pointer-events-none" />
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center z-[1000] pointer-events-none">
+        <p className="text-xs uppercase tracking-[4px] text-white/30 mb-3">Where I&apos;ve Been</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_0_60px_rgba(0,0,0,0.9)]">
+          Cloutains 的旅程
         </h1>
-        <p className="text-sm text-white/50 mt-2">
-          {trips.length} 段旅程 · 无数回忆
-        </p>
+        <div className="flex items-center gap-3 mt-3 justify-center">
+          <span className="text-sm text-white/40">{trips.length} 段旅程</span>
+          <span className="w-1 h-1 rounded-full bg-white/20" />
+          <span className="text-sm text-white/40">用脚步丈量世界</span>
+        </div>
       </div>
     </div>
   );

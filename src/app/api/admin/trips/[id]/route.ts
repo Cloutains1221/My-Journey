@@ -1,10 +1,24 @@
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 async function checkAuth() {
   const cookieStore = await cookies();
   return cookieStore.get("admin_token")?.value === "authenticated";
+}
+
+function generateSlug(title: string, date?: string): string {
+  const ascii = title
+    .replace(/[^\x00-\x7F]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+  if (ascii.length >= 2) return ascii;
+  if (date) return `trip-${date}`;
+  return `trip-${Date.now()}`;
 }
 
 export async function PUT(
@@ -14,7 +28,11 @@ export async function PUT(
   if (!(await checkAuth())) return NextResponse.json({ error: "未授权" }, { status: 401 });
   const { id } = await params;
   const body = await request.json();
-  const { error } = await supabaseAdmin.from("trips").update(body).eq("id", id);
+  const { title, slug: customSlug, date, location, latitude, longitude, cover_image, content, rating } = body;
+  const slug = customSlug || generateSlug(title || "", date);
+  const { error } = await supabaseAdmin.from("trips").update({
+    title, slug, date, location, latitude, longitude, cover_image, content, rating
+  }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

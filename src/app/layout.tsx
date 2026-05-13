@@ -3,8 +3,8 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 
 export const metadata: Metadata = {
-  title: "人生旅程",
-  description: "记录我走过的每一段旅程",
+  title: "Cloutains的旅程",
+  description: "用脚步丈量世界，记录每一段旅程",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
