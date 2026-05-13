@@ -1,20 +1,15 @@
-@config "../../tailwind.config.ts";
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@config "../../tailwind.config.ts";
 
-:root {
-  --background: #0a0a0f;
-  --foreground: #ffffff;
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #0a0a0f;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
