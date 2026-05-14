@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: Request) {
   const { tripId, desireLevel, nickname, comment } = await request.json();
@@ -18,5 +19,9 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  const { data: trip } = await supabaseAdmin.from("trips").select("slug").eq("id", tripId).single();
+  if (trip?.slug) revalidatePath(`/trip/${trip.slug}`);
+
   return NextResponse.json({ success: true });
 }

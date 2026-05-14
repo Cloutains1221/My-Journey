@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 async function checkAuth() {
   const cookieStore = await cookies();
@@ -40,5 +41,7 @@ export async function POST(request: Request) {
     title, slug, date, location, latitude, longitude, cover_image, content, rating
   }).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePath("/");
+  revalidatePath(`/trip/${slug}`);
   return NextResponse.json(data);
 }

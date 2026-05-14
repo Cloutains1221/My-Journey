@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 async function checkAuth() {
   const cookieStore = await cookies();
@@ -17,7 +18,7 @@ export async function DELETE(
 
   const { data: photo } = await supabaseAdmin
     .from("photos")
-    .select("url")
+    .select("url, trips(slug)")
     .eq("id", id)
     .single();
 
@@ -29,5 +30,10 @@ export async function DELETE(
 
   const { error } = await supabaseAdmin.from("photos").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  if ((photo as any)?.trips?.slug) {
+    revalidatePath(`/trip/${(photo as any).trips.slug}`);
+  }
+
   return NextResponse.json({ success: true });
 }

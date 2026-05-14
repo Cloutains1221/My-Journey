@@ -7,6 +7,9 @@ import DesireVoteComponent from "@/components/DesireVote";
 import VisitorComments from "@/components/VisitorComments";
 import { notFound } from "next/navigation";
 
+export const revalidate = 3600;
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const { data: trips } = await supabase.from("trips").select("slug");
   return (trips || []).map((t: any) => ({ slug: t.slug }));

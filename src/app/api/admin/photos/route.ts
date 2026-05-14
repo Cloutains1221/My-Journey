@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 async function checkAuth() {
   const cookieStore = await cookies();
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
   if (!tripId || files.length === 0) {
     return NextResponse.json({ error: "缺少参数" }, { status: 400 });
   }
+
+  const { data: trip } = await supabaseAdmin.from("trips").select("slug").eq("id", tripId).single();
 
   const results = [];
 
@@ -46,6 +49,10 @@ export async function POST(request: Request) {
     }
 
     results.push(urlData.publicUrl);
+  }
+
+  if (trip?.slug) {
+    revalidatePath(`/trip/${trip.slug}`);
   }
 
   return NextResponse.json({ urls: results });

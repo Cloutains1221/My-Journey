@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 async function checkAuth() {
   const cookieStore = await cookies();
@@ -34,6 +35,8 @@ export async function PUT(
     title, slug, date, location, latitude, longitude, cover_image, content, rating
   }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidatePath("/");
+  revalidatePath(`/trip/${slug}`);
   return NextResponse.json({ success: true });
 }
 
@@ -43,7 +46,13 @@ export async function DELETE(
 ) {
   if (!(await checkAuth())) return NextResponse.json({ error: "未授权" }, { status: 401 });
   const { id } = await params;
+
+  const { data: trip } = await supabaseAdmin.from("trips").select("slug").eq("id", id).single();
+
   const { error } = await supabaseAdmin.from("trips").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  revalidatePath("/");
+  if (trip?.slug) revalidatePath(`/trip/${trip.slug}`);
   return NextResponse.json({ success: true });
 }
