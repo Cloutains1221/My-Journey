@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import type L from "leaflet";
 import type { Trip } from "@/lib/types";
@@ -16,6 +16,7 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.CircleMarker[]>([]);
+  const [mapReady, setMapReady] = useState(false);
 
   // Initialize map once
   useEffect(() => {
@@ -35,31 +36,23 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
       }).addTo(map);
 
       mapInstanceRef.current = map;
+      setMapReady(true);
     });
 
     return () => { mapInstanceRef.current?.remove(); mapInstanceRef.current = null; };
   }, []);
 
-  // Update markers when trips change
+  // Add/update markers whenever trips or mapReady changes
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
+    if (!mapReady) return;
 
-    // Dynamic import to get L
     import("leaflet").then((L) => {
+      const map = mapInstanceRef.current;
+      if (!map) return;
+
       // Clear old markers
       markersRef.current.forEach(m => m.remove());
       markersRef.current = [];
-
-      // Fix icon paths
-      if (L.Icon.Default.prototype) {
-        delete (L.Icon.Default.prototype as any)._getIconUrl;
-        L.Icon.Default.mergeOptions({
-          iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-          iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-          shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-        });
-      }
 
       trips.forEach((trip) => {
         const color = getRatingColor(trip.rating);
@@ -86,7 +79,7 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
         markersRef.current.push(circle, pulse);
       });
     });
-  }, [trips]);
+  }, [trips, mapReady]);
 
   return (
     <div className="relative w-full h-[500px] overflow-hidden">
