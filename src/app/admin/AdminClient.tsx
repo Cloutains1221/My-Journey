@@ -83,13 +83,43 @@ export default function AdminClient() {
     else setError("删除失败");
   }
 
+  async function compressImage(file: File): Promise<File> {
+    // Only compress if over 2MB or not a JPEG
+    if (file.size < 2 * 1024 * 1024 && file.type === "image/jpeg") return file;
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxSide = 1920;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxSide || h > maxSide) {
+          if (w > h) { h = Math.round(h * maxSide / w); w = maxSide; }
+          else { w = Math.round(w * maxSide / h); h = maxSide; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+        canvas.toBlob((blob) => {
+          resolve(new File([blob!], file.name, { type: "image/jpeg" }));
+        }, "image/jpeg", 0.85);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files || files.length === 0 || !editing?.id) return;
     setUploading(true);
     const formData = new FormData();
     formData.append("tripId", editing.id);
-    Array.from(files).forEach((f) => formData.append("files", f));
+
+    for (const f of Array.from(files)) {
+      const compressed = await compressImage(f);
+      formData.append("files", compressed);
+    }
 
     const res = await fetch("/api/admin/photos", { method: "POST", body: formData });
     if (res.ok) {
@@ -387,9 +417,9 @@ export default function AdminClient() {
                 >
                   <div className="text-3xl mb-2">📷</div>
                   <p className="text-sm text-text-muted">
-                    {uploading ? "上传中..." : "拖拽图片到此处或点击上传"}
+                    {uploading ? "压缩并上传中..." : "拖拽图片到此处或点击上传"}
                   </p>
-                  <p className="text-xs text-text-muted/50 mt-1">支持 JPG, PNG, WebP · 可批量选择</p>
+                  <p className="text-xs text-text-muted/50 mt-1">支持 JPG, PNG, WebP · 大图自动压缩至 1920px · 可批量选择</p>
                   <input
                     ref={fileInputRef}
                     type="file"
