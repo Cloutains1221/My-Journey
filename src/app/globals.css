@@ -1,7 +1,14 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-@config "../../tailwind.config.ts";
+@theme {
+  --color-bg: #0a0a0f;
+  --color-surface: rgba(255, 255, 255, 0.03);
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-muted: rgba(255, 255, 255, 0.3);
+}
 
 * {
   box-sizing: border-box;
