@@ -2,6 +2,8 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { lookupAdcode } from "@/lib/city-adcodes";
+import { dissolveDistricts, buildGeometry } from "@/lib/geo-utils";
 
 async function checkAuth() {
   const cookieStore = await cookies();
@@ -22,6 +24,55 @@ function generateSlug(title: string, date?: string): string {
   return `trip-${Date.now()}`;
 }
 
+/**
+ * Auto-add city boundary for a newly created trip.
+ * Runs in background — failure does not block trip creation.
+ */
+async function ensureCityBoundary(cityName: string) {
+  try {
+    const adcode = lookupAdcode(cityName);
+    if (!adcode) return;
+
+    // Check if boundary already exists in Supabase
+    const { data: existingInDb } = await supabaseAdmin
+      .from("city_boundaries")
+      .select("name")
+      .eq("name", cityName)
+      .single();
+    if (existingInDb) return;
+
+    // Check static file (dynamic import for ESM compatibility)
+    try {
+      const { promises: fs } = await import("node:fs");
+      const { join } = await import("node:path");
+      const staticPath = join(process.cwd(), "public", "data", "city-boundaries.json");
+      const raw = await fs.readFile(staticPath, "utf-8");
+      const data = JSON.parse(raw);
+      if (data.features?.some((f: any) => f.properties?.name === cityName)) return;
+    } catch { /* static file might not exist */ }
+
+    // Fetch from DataV
+    const url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}_full`;
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const geo = await res.json();
+    const features = geo.features;
+    if (!features || features.length === 0) return;
+
+    // Dissolve to remove internal district boundaries
+    const geometry = buildGeometry(dissolveDistricts(features));
+
+    // Store in Supabase
+    await supabaseAdmin.from("city_boundaries").insert({
+      name: cityName,
+      adcode,
+      geojson: geometry,
+    });
+  } catch {
+    // Best-effort: don't block trip creation
+  }
+}
+
 export async function GET() {
   if (!(await checkAuth())) return NextResponse.json({ error: "未授权" }, { status: 401 });
   const { data, error } = await supabaseAdmin
@@ -35,12 +86,16 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!(await checkAuth())) return NextResponse.json({ error: "未授权" }, { status: 401 });
   const body = await request.json();
-  const { title, slug: customSlug, date, location, latitude, longitude, cover_image, content, rating } = body;
+  const { title, slug: customSlug, date, end_date, location, city_name, latitude, longitude, cover_image, content, rating } = body;
   const slug = customSlug || generateSlug(title || "", date);
   const { data, error } = await supabaseAdmin.from("trips").insert({
-    title, slug, date, location, latitude, longitude, cover_image, content, rating
+    title, slug, date, end_date: end_date || null, location, city_name: city_name || null, latitude, longitude, cover_image, content, rating
   }).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Auto-add city boundary (non-blocking, best-effort)
+  if (city_name) ensureCityBoundary(city_name);
+
   revalidatePath("/");
   revalidatePath(`/trip/${slug}`);
   return NextResponse.json(data);

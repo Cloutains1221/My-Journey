@@ -12,6 +12,9 @@
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
+    "@turf/dissolve": "^7.3.5",
+    "@turf/helpers": "^7.3.5",
+    "@turf/union": "^7.3.5",
     "leaflet": "^1.9.4",
     "next": "16.2.6",
     "react": "19.2.4",

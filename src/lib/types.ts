@@ -3,7 +3,9 @@ export interface Trip {
   title: string;
   slug: string;
   date: string;
+  end_date: string | null;
   location: string;
+  city_name: string | null;
   latitude: number;
   longitude: number;
   cover_image: string | null;
@@ -42,6 +44,12 @@ export interface DesireVote {
   desire_level: number;
   comment: string | null;
   created_at: string;
+}
+
+/** Format date range for display: "2026-01-15 → 2026-01-20" or just "2026-01-15" */
+export function formatDateRange(date: string, endDate?: string | null): string {
+  if (!endDate || endDate === date) return date;
+  return `${date} → ${endDate}`;
 }
 
 export const RATING_LABELS: Record<number, string> = {

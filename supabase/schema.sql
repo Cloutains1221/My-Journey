@@ -4,7 +4,9 @@ create table trips (
   title text not null,
   slug text not null unique,
   date date not null,
+  end_date date,
   location text not null,
+  city_name text,
   latitude float8 not null,
   longitude float8 not null,
   cover_image text,
@@ -59,8 +61,18 @@ alter table photos enable row level security;
 alter table agreement_votes enable row level security;
 alter table desire_votes enable row level security;
 
+-- 城市边界数据（运行时动态添加）
+create table city_boundaries (
+  id uuid default gen_random_uuid() primary key,
+  name text not null unique,
+  adcode text not null,
+  geojson jsonb not null,
+  created_at timestamptz default now()
+);
+
 -- 公开可读
 create policy "Anyone can read trips" on trips for select using (true);
 create policy "Anyone can read photos" on photos for select using (true);
 create policy "Anyone can read agreement_votes" on agreement_votes for select using (true);
 create policy "Anyone can read desire_votes" on desire_votes for select using (true);
+create policy "Anyone can read city_boundaries" on city_boundaries for select using (true);

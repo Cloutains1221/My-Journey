@@ -1,0 +1,18 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "🏔️ Cloutains的旅程" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e4]: 🏔️
+      - generic [ref=e5]: Cloutains的旅程
+    - generic [ref=e6]:
+      - link "首页" [ref=e7] [cursor=pointer]:
+        - /url: /
+      - link "地图" [ref=e8] [cursor=pointer]:
+        - /url: /map
+  - main [ref=e9]:
+    - generic [ref=e11]:
+      - heading "🔐 身份验证" [level=2] [ref=e12]
+      - paragraph [ref=e13]: 请输入管理密码以继续
+      - textbox "密码" [ref=e14]
+      - button "进入后台" [ref=e15]
+  - alert [ref=e16]

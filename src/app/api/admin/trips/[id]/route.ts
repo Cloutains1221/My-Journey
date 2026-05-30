@@ -29,10 +29,10 @@ export async function PUT(
   if (!(await checkAuth())) return NextResponse.json({ error: "未授权" }, { status: 401 });
   const { id } = await params;
   const body = await request.json();
-  const { title, slug: customSlug, date, location, latitude, longitude, cover_image, content, rating } = body;
+  const { title, slug: customSlug, date, end_date, location, city_name, latitude, longitude, cover_image, content, rating } = body;
   const slug = customSlug || generateSlug(title || "", date);
   const { error } = await supabaseAdmin.from("trips").update({
-    title, slug, date, location, latitude, longitude, cover_image, content, rating
+    title, slug, date, end_date: end_date || null, location, city_name: city_name || null, latitude, longitude, cover_image, content, rating
   }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   revalidatePath("/");

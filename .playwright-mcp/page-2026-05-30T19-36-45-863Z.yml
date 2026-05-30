@@ -1,0 +1,181 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "🏔️ Cloutains的旅程" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e4]: 🏔️
+      - generic [ref=e5]: Cloutains的旅程
+    - generic [ref=e6]:
+      - link "首页" [ref=e7] [cursor=pointer]:
+        - /url: /
+      - link "地图" [ref=e8] [cursor=pointer]:
+        - /url: /map
+  - main [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - img "旅行足迹地图" [ref=e12]:
+          - generic:
+            - generic:
+              - img
+        - generic:
+          - paragraph: Where I've Been
+          - heading "Cloutains 的旅程" [level=1]
+          - generic:
+            - generic: 8 段旅程
+            - generic: 用脚步丈量世界
+      - generic [ref=e30]:
+        - generic [ref=e33]:
+          - generic [ref=e34]: 🗺️
+          - generic [ref=e35]:
+            - generic [ref=e36]: "8"
+            - generic [ref=e37]: 段旅程
+          - paragraph [ref=e38]: 足迹遍布
+        - generic [ref=e41]:
+          - generic [ref=e42]: 📍
+          - generic [ref=e43]:
+            - generic [ref=e44]: "8"
+            - generic [ref=e45]: 座城市
+          - paragraph [ref=e46]: 到访地点
+        - generic [ref=e49]:
+          - generic [ref=e50]: 📅
+          - generic [ref=e52]: 2026-05-21
+          - paragraph [ref=e53]: 最近记录
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - paragraph [ref=e56]: 旅 · 程 · 时 · 间 · 线
+          - heading "走过的路，都算数" [level=2] [ref=e57]
+          - paragraph [ref=e58]: 每一段旅程都是生命中独特的印记
+        - navigation [ref=e59]:
+          - generic [ref=e60]:
+            - paragraph [ref=e61]: 年份
+            - button "2026" [ref=e62]
+            - button "2025" [ref=e63]
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e70]: "2026"
+            - generic [ref=e72]:
+              - link [ref=e73] [cursor=pointer]:
+                - /url: /trip/trip-2026-05-21
+                - article [ref=e76]:
+                  - generic [ref=e78]: 🏔️
+                  - generic [ref=e79]:
+                    - generic [ref=e80]:
+                      - generic [ref=e81]:
+                        - generic [ref=e82]: 2026-05-21 → 2026-05-25
+                        - generic [ref=e83]: 夯
+                      - heading "桂林阳朔" [level=2] [ref=e84]
+                      - paragraph [ref=e85]: 📍 阳朔县，桂林市，广西壮族自治区
+                      - paragraph [ref=e86]: 暂无文字记录
+                    - generic [ref=e87]:
+                      - paragraph [ref=e88]: 0 张照片
+                      - generic [ref=e89]: 查看详情 →
+              - link [ref=e90] [cursor=pointer]:
+                - /url: /trip/trip-2026-05-19
+                - article [ref=e93]:
+                  - generic [ref=e95]: 🏔️
+                  - generic [ref=e96]:
+                    - generic [ref=e97]:
+                      - generic [ref=e98]:
+                        - generic [ref=e99]: 2026-05-19 → 2026-05-21
+                        - generic [ref=e100]: npc
+                      - heading "黄果树瀑布" [level=2] [ref=e101]
+                      - paragraph [ref=e102]: 📍 安顺市
+                      - paragraph [ref=e103]: 暂无文字记录
+                    - generic [ref=e104]:
+                      - paragraph [ref=e105]: 0 张照片
+                      - generic [ref=e106]: 查看详情 →
+              - link [ref=e107] [cursor=pointer]:
+                - /url: /trip/trip-2026-05-16
+                - article [ref=e110]:
+                  - generic [ref=e112]: 🏔️
+                  - generic [ref=e113]:
+                    - generic [ref=e114]:
+                      - generic [ref=e115]:
+                        - generic [ref=e116]: 2026-05-16 → 2026-05-19
+                        - generic [ref=e117]: 夯
+                      - heading "重庆" [level=2] [ref=e118]
+                      - paragraph [ref=e119]: 📍 11111
+                      - paragraph [ref=e120]: 暂无文字记录
+                    - generic [ref=e121]:
+                      - paragraph [ref=e122]: 0 张照片
+                      - generic [ref=e123]: 查看详情 →
+              - link [ref=e124] [cursor=pointer]:
+                - /url: /trip/trip-2026-04-26
+                - article [ref=e127]:
+                  - img "卧超之平潭大团建！！！" [ref=e129]
+                  - generic [ref=e130]:
+                    - generic [ref=e131]:
+                      - generic [ref=e132]:
+                        - generic [ref=e133]: 2026-04-26
+                        - generic [ref=e134]: 顶级
+                      - heading "卧超之平潭大团建！！！" [level=2] [ref=e135]
+                      - paragraph [ref=e136]: 📍 平潭县，福州市，福建省
+                      - paragraph [ref=e137]: 特别幸福的一次大团建，感谢叔叔龙、键盘、小黑龙等人的策划！
+                    - generic [ref=e138]:
+                      - paragraph [ref=e139]: 6 张照片
+                      - generic [ref=e140]: 查看详情 →
+              - link [ref=e141] [cursor=pointer]:
+                - /url: /trip/trip-2026-01-23
+                - article [ref=e144]:
+                  - img "洛阳 其实大部分时间不在洛阳市区哈哈" [ref=e146]
+                  - generic [ref=e147]:
+                    - generic [ref=e148]:
+                      - generic [ref=e149]:
+                        - generic [ref=e150]: 2026-01-22 → 2026-01-26
+                        - generic [ref=e151]: 顶级
+                      - heading "洛阳 其实大部分时间不在洛阳市区哈哈" [level=2] [ref=e152]
+                      - paragraph [ref=e153]: 📍 洛阳市，河南省
+                      - paragraph [ref=e154]: 老君山真的太夯了，非常幸运地在雪还没完全融化的时候到达
+                    - generic [ref=e155]:
+                      - paragraph [ref=e156]: 17 张照片
+                      - generic [ref=e157]: 查看详情 →
+              - link [ref=e158] [cursor=pointer]:
+                - /url: /trip/trip-2026-01-20
+                - article [ref=e161]:
+                  - img "中嘞！落地郑州" [ref=e163]
+                  - generic [ref=e164]:
+                    - generic [ref=e165]:
+                      - generic [ref=e166]:
+                        - generic [ref=e167]: 2026-01-20 → 2026-01-22
+                        - generic [ref=e168]: 人上人
+                      - heading "中嘞！落地郑州" [level=2] [ref=e169]
+                      - paragraph [ref=e170]: 📍 郑州市，河南省
+                      - paragraph [ref=e171]: 本人第一次见到真正的雪，这么多这么大的雪！ 只有河南稍微拉低了一点整体的体验，看来我不适合看话剧......
+                    - generic [ref=e172]:
+                      - paragraph [ref=e173]: 12 张照片
+                      - generic [ref=e174]: 查看详情 →
+          - generic [ref=e176]:
+            - generic [ref=e179]: "2025"
+            - generic [ref=e181]:
+              - link [ref=e182] [cursor=pointer]:
+                - /url: /trip/trip-2025-11-07
+                - article [ref=e185]:
+                  - img "真神降临——张家界" [ref=e187]
+                  - generic [ref=e188]:
+                    - generic [ref=e189]:
+                      - generic [ref=e190]:
+                        - generic [ref=e191]: 2025-11-06 → 2025-11-08
+                        - generic [ref=e192]: 夯
+                      - heading "真神降临——张家界" [level=2] [ref=e193]
+                      - paragraph [ref=e194]: 📍 张家界市，湖南省
+                      - paragraph [ref=e195]: 第一天进山时能见度不足五十米，什么都看不见......打算明天就打道回府...... 谁曾想第二天早上醒来，顺手查了一下张家界小程序里的景区监控，发现山上的情况究极无敌旋风霹雳的夯啊！！！ 于是马上收拾装备上山，然后就收获了2025年最大的
+                    - generic [ref=e196]:
+                      - paragraph [ref=e197]: 21 张照片
+                      - generic [ref=e198]: 查看详情 →
+              - link [ref=e199] [cursor=pointer]:
+                - /url: /trip/trip-2025-11-04
+                - article [ref=e202]:
+                  - img "夜之城长沙" [ref=e204]
+                  - generic [ref=e205]:
+                    - generic [ref=e206]:
+                      - generic [ref=e207]:
+                        - generic [ref=e208]: 2025-11-04 → 2025-11-06
+                        - generic [ref=e209]: 人上人
+                      - heading "夜之城长沙" [level=2] [ref=e210]
+                      - paragraph [ref=e211]: 📍 长沙市，湖南省
+                      - paragraph [ref=e212]: 费大厨辣椒炒肉真神了 长沙真的随便吃都不踩雷，就是有点重油重盐
+                    - generic [ref=e213]:
+                      - paragraph [ref=e214]: 10 张照片
+                      - generic [ref=e215]: 查看详情 →
+  - button "Open Next.js Dev Tools" [ref=e221] [cursor=pointer]:
+    - img [ref=e222]
+  - alert [ref=e225]

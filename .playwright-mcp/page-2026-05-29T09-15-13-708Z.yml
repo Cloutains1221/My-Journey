@@ -1,0 +1,125 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "🏔️ Cloutains的旅程" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e4]: 🏔️
+      - generic [ref=e5]: Cloutains的旅程
+    - generic [ref=e6]:
+      - link "首页" [ref=e7] [cursor=pointer]:
+        - /url: /
+      - link "地图" [ref=e8] [cursor=pointer]:
+        - /url: /map
+  - main [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - img "旅行足迹地图" [ref=e12]:
+          - generic:
+            - generic:
+              - img
+        - generic:
+          - paragraph: Where I've Been
+          - heading "Cloutains 的旅程" [level=1]
+          - generic:
+            - generic: 5 段旅程
+            - generic: 用脚步丈量世界
+      - generic [ref=e24]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: 🗺️
+          - generic [ref=e29]:
+            - generic [ref=e30]: "5"
+            - generic [ref=e31]: 段旅程
+          - paragraph [ref=e32]: 足迹遍布
+        - generic [ref=e35]:
+          - generic [ref=e36]: 📍
+          - generic [ref=e37]:
+            - generic [ref=e38]: "5"
+            - generic [ref=e39]: 座城市
+          - paragraph [ref=e40]: 到访地点
+        - generic [ref=e43]:
+          - generic [ref=e44]: 📅
+          - generic [ref=e46]: 2026-04-26
+          - paragraph [ref=e47]: 最近记录
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - paragraph [ref=e50]: 旅 · 程 · 时 · 间 · 线
+          - heading "走过的路，都算数" [level=2] [ref=e51]
+          - paragraph [ref=e52]: 每一段旅程都是生命中独特的印记
+        - generic [ref=e55]:
+          - link [ref=e56] [cursor=pointer]:
+            - /url: /trip/trip-2026-04-26
+            - article [ref=e59]:
+              - img "卧超之平潭大团建！！！" [ref=e61]
+              - generic [ref=e62]:
+                - generic [ref=e63]:
+                  - generic [ref=e64]:
+                    - generic [ref=e65]: 2026-04-26
+                    - generic [ref=e66]: 顶级
+                  - heading "卧超之平潭大团建！！！" [level=2] [ref=e67]
+                  - paragraph [ref=e68]: 📍 平潭县，福州市，福建省
+                  - paragraph [ref=e69]: 特别幸福的一次大团建，感谢叔叔龙、键盘、小黑龙等人的策划！
+                - generic [ref=e70]:
+                  - paragraph [ref=e71]: 6 张照片
+                  - generic [ref=e72]: 查看详情 →
+          - link [ref=e73] [cursor=pointer]:
+            - /url: /trip/trip-2026-01-23
+            - article [ref=e76]:
+              - img "洛阳 其实大部分时间不在洛阳市区哈哈" [ref=e78]
+              - generic [ref=e79]:
+                - generic [ref=e80]:
+                  - generic [ref=e81]:
+                    - generic [ref=e82]: 2026-01-23
+                    - generic [ref=e83]: 顶级
+                  - heading "洛阳 其实大部分时间不在洛阳市区哈哈" [level=2] [ref=e84]
+                  - paragraph [ref=e85]: 📍 洛阳市，河南省
+                  - paragraph [ref=e86]: 老君山真的太夯了，非常幸运地在雪还没完全融化的时候到达
+                - generic [ref=e87]:
+                  - paragraph [ref=e88]: 17 张照片
+                  - generic [ref=e89]: 查看详情 →
+          - link [ref=e90] [cursor=pointer]:
+            - /url: /trip/trip-2026-01-20
+            - article [ref=e93]:
+              - img "中嘞！落地郑州" [ref=e95]
+              - generic [ref=e96]:
+                - generic [ref=e97]:
+                  - generic [ref=e98]:
+                    - generic [ref=e99]: 2026-01-20
+                    - generic [ref=e100]: 人上人
+                  - heading "中嘞！落地郑州" [level=2] [ref=e101]
+                  - paragraph [ref=e102]: 📍 郑州市，河南省
+                  - paragraph [ref=e103]: 本人第一次见到真正的雪，这么多这么大的雪！ 只有河南稍微拉低了一点整体的体验，看来我不适合看话剧......
+                - generic [ref=e104]:
+                  - paragraph [ref=e105]: 12 张照片
+                  - generic [ref=e106]: 查看详情 →
+          - link [ref=e107] [cursor=pointer]:
+            - /url: /trip/trip-2025-11-07
+            - article [ref=e110]:
+              - img "真神降临——张家界" [ref=e112]
+              - generic [ref=e113]:
+                - generic [ref=e114]:
+                  - generic [ref=e115]:
+                    - generic [ref=e116]: 2025-11-07
+                    - generic [ref=e117]: 夯
+                  - heading "真神降临——张家界" [level=2] [ref=e118]
+                  - paragraph [ref=e119]: 📍 张家界市，湖南省
+                  - paragraph [ref=e120]: 第一天进山时能见度不足五十米，什么都看不见......打算明天就打道回府...... 谁曾想第二天早上醒来，顺手查了一下张家界小程序里的景区监控，发现山上的情况究极无敌旋风霹雳的夯啊！！！ 于是马上收拾装备上山，然后就收获了2025年最大的
+                - generic [ref=e121]:
+                  - paragraph [ref=e122]: 21 张照片
+                  - generic [ref=e123]: 查看详情 →
+          - link [ref=e124] [cursor=pointer]:
+            - /url: /trip/trip-2025-11-04
+            - article [ref=e127]:
+              - img "夜之城长沙" [ref=e129]
+              - generic [ref=e130]:
+                - generic [ref=e131]:
+                  - generic [ref=e132]:
+                    - generic [ref=e133]: 2025-11-04
+                    - generic [ref=e134]: 人上人
+                  - heading "夜之城长沙" [level=2] [ref=e135]
+                  - paragraph [ref=e136]: 📍 长沙市，湖南省
+                  - paragraph [ref=e137]: 费大厨辣椒炒肉真神了 长沙真的随便吃都不踩雷，就是有点重油重盐
+                - generic [ref=e138]:
+                  - paragraph [ref=e139]: 10 张照片
+                  - generic [ref=e140]: 查看详情 →
+  - button "Open Next.js Dev Tools" [ref=e146] [cursor=pointer]:
+    - img [ref=e147]
+  - alert [ref=e150]

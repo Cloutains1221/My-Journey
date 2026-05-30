@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { Trip, Photo, AgreementVote, DesireVote } from "@/lib/types";
-import RatingBadge from "@/components/RatingBadge";
+import { formatDateRange } from "@/lib/types";
 import PhotoGallery from "@/components/PhotoGallery";
 import AgreementVoteComponent from "@/components/AgreementVote";
 import DesireVoteComponent from "@/components/DesireVote";
@@ -34,22 +34,24 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         {t.cover_image ? (
           <img src={t.cover_image} alt={t.title} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center text-white/10 text-6xl">📷</div>
+          <div className="w-full h-full bg-surface-cream-strong flex items-center justify-center text-surface-cream-strong text-6xl">📷</div>
         )}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-bg to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-canvas to-transparent" />
       </div>
 
       <article className="max-w-3xl mx-auto px-8 py-10">
         <div className="flex items-center gap-4 mb-8">
           <div>
-            <p className="text-sm text-text-muted mb-2">{t.date} · {t.location}</p>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white">{t.title}</h1>
+            <p className="text-sm text-muted mb-2">{formatDateRange(t.date, t.end_date)} · {t.location}</p>
+            <h1 className="font-display text-4xl font-normal tracking-[-0.5px] text-ink">
+              {t.title}
+            </h1>
           </div>
-          <RatingBadge rating={t.rating} size="lg" />
+          <RatingBadge rating={t.rating} />
         </div>
 
         {t.content && (
-          <div className="text-base text-text-secondary leading-relaxed space-y-4 mb-12 whitespace-pre-line">
+          <div className="text-base text-body leading-relaxed space-y-4 mb-12 whitespace-pre-line">
             {t.content}
           </div>
         )}
@@ -61,5 +63,21 @@ export default async function TripPage({ params }: { params: Promise<{ slug: str
         <VisitorComments agreementVotes={t.agreement_votes || []} desireVotes={t.desire_votes || []} />
       </article>
     </div>
+  );
+}
+
+function RatingBadge({ rating }: { rating: number }) {
+  const labels: Record<number, string> = { 1: "拉完了", 2: "npc", 3: "人上人", 4: "顶级", 5: "夯" };
+  const colors: Record<number, string> = {
+    1: "bg-hairline text-muted",
+    2: "bg-hairline text-muted",
+    3: "bg-accent-teal/15 text-accent-teal",
+    4: "bg-accent-amber/15 text-accent-amber",
+    5: "bg-primary/15 text-primary",
+  };
+  return (
+    <span className={`text-sm font-semibold px-3 py-1 rounded-full ${colors[rating] ?? colors[5]}`}>
+      {labels[rating] ?? "?"}
+    </span>
   );
 }

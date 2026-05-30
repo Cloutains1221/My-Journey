@@ -2,21 +2,83 @@
 @import "leaflet/dist/leaflet.css";
 
 @theme {
+  /* ── Warm editorial palette (Claude.com design system) ── */
+  --color-canvas: #faf9f5;
+  --color-ink: #141413;
+  --color-body: #3d3d3a;
+  --color-muted: #6c6a64;
+  --color-muted-soft: #8e8b82;
+  --color-hairline: #e6dfd8;
+  --color-hairline-soft: #ebe6df;
+
+  /* Surfaces */
+  --color-surface-soft: #f5f0e8;
+  --color-surface-card: #efe9de;
+  --color-surface-cream-strong: #e8e0d2;
+  --color-surface-dark: #181715;
+  --color-surface-dark-elevated: #252320;
+  --color-surface-dark-soft: #1f1e1b;
+
+  /* Brand accent */
+  --color-primary: #cc785c;
+  --color-primary-active: #a9583e;
+  --color-primary-disabled: #e6dfd8;
+  --color-on-primary: #ffffff;
+  --color-on-dark: #faf9f5;
+  --color-on-dark-soft: #a09d96;
+
+  /* Accent colors */
+  --color-accent-teal: #5db8a6;
+  --color-accent-amber: #e8a55a;
+
+  /* Map dark background keeps its own colors */
   --color-bg: #0a0a0f;
   --color-surface: rgba(255, 255, 255, 0.03);
   --color-border: rgba(255, 255, 255, 0.06);
   --color-text-primary: #ffffff;
   --color-text-secondary: rgba(255, 255, 255, 0.6);
   --color-text-muted: rgba(255, 255, 255, 0.3);
+
+  /* Font families */
+  --font-display: "Cormorant Garamond", "EB Garamond", "Times New Roman", serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
+/* ── Base ── */
 * {
   box-sizing: border-box;
 }
 
 body {
-  background: #0a0a0f;
-  color: #ffffff;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Headline serif defaults ── */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  color: var(--color-ink);
+}
+
+h1 {
+  font-size: 3rem;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 2rem;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+}
+
+/* ── Inline links ── */
+a {
+  color: var(--color-primary);
 }

@@ -10,9 +10,9 @@ export default function VisitorComments({
 }) {
   if (agreementVotes.length === 0 && desireVotes.length === 0) {
     return (
-      <div className="py-8 border-t border-border">
-        <p className="text-xs uppercase tracking-[3px] text-text-muted mb-6">访客回声</p>
-        <p className="text-sm text-text-muted">还没有人留下评价，来做第一个吧</p>
+      <div className="py-8 border-t border-hairline">
+        <p className="text-xs uppercase tracking-[3px] text-muted-soft mb-6 font-medium">访客回声</p>
+        <p className="text-sm text-muted">还没有人留下评价，来做第一个吧</p>
       </div>
     );
   }
@@ -27,22 +27,22 @@ export default function VisitorComments({
   all.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
   return (
-    <div className="py-8 border-t border-border">
-      <p className="text-xs uppercase tracking-[3px] text-text-muted mb-6">访客回声</p>
-      <div className="flex flex-col gap-5">
+    <div className="py-8 border-t border-hairline">
+      <p className="text-xs uppercase tracking-[3px] text-muted-soft mb-6 font-medium">访客回声</p>
+      <div className="flex flex-col gap-4">
         {all.map((item, i) => (
-          <div key={i} className="p-5 rounded-xl bg-surface border border-border">
+          <div key={i} className="p-5 rounded-xl bg-surface-card border border-hairline-soft">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-white/70 font-semibold text-sm">{item.nickname}</span>
-              <span className={`text-xs px-2.5 py-1 rounded-lg border ${
+              <span className="text-ink/80 font-semibold text-sm">{item.nickname}</span>
+              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
                 item.type === "agreement"
-                  ? "bg-green-900/10 border-green-800/30 text-green-400"
-                  : "bg-red-900/10 border-red-800/30 text-red-400"
+                  ? "bg-accent-teal/10 border-accent-teal/30 text-accent-teal"
+                  : "bg-primary/10 border-primary/30 text-primary"
               }`}>
                 {item.type === "agreement" ? "✓ " : "🔥 "}{item.label}
               </span>
             </div>
-            {item.comment && <p className="text-sm text-text-secondary leading-relaxed">{item.comment}</p>}
+            {item.comment && <p className="text-sm text-body leading-relaxed">{item.comment}</p>}
           </div>
         ))}
       </div>

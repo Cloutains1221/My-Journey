@@ -4,21 +4,32 @@ import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import type L from "leaflet";
 import type { Trip } from "@/lib/types";
+import { formatDateRange } from "@/lib/types";
+import { matchCityBoundary, extractCityName } from "@/lib/city-data";
+import type { FeatureCollection } from "@/lib/city-data";
+import { wgs84ToGcj02 } from "@/lib/coords";
 
-function getRatingColor(rating: number): string {
-  const colors: Record<number, string> = {
-    1: "#6b7280", 2: "#94a3b8", 3: "#66bb6a", 4: "#ffa726", 5: "#ff6b6b",
-  };
-  return colors[rating] || "#ff6b6b";
-}
+// ---- Rating color map ----
+const RATING_COLORS: Record<number, string> = {
+  1: "#6b7280", 2: "#94a3b8", 3: "#66bb6a", 4: "#ffa726", 5: "#ff6b6b",
+};
+function color(r: number) { return RATING_COLORS[r] ?? "#ff6b6b"; }
+
+// ---- Gaode dark tile URL (Chinese labels, GCJ-02) ----
+const GAODE_URL =
+  "https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}";
+
+// ---- CARTO fallback (English labels, WGS-84) ----
+const CARTO_URL =
+  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 
 export default function HeroMap({ trips }: { trips: Trip[] }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.CircleMarker[]>([]);
+  const layersRef = useRef<L.Layer[]>([]);
   const [mapReady, setMapReady] = useState(false);
 
-  // Initialize map once
+  // --- Init map ---
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -26,57 +37,151 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
       if (!mapRef.current || mapInstanceRef.current) return;
 
       const map = L.map(mapRef.current, {
-        center: [35, 115], zoom: 4,
-        scrollWheelZoom: false, dragging: true,
-        zoomControl: false, attributionControl: false,
+        center: [35, 115],
+        zoom: 4,
+        scrollWheelZoom: false,
+        dragging: true,
+        zoomControl: false,
+        attributionControl: false,
       });
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 19,
+      // Gaode tiles with CARTO fallback
+      let tileFailCount = 0;
+      const gaode = L.tileLayer(GAODE_URL, {
+        maxZoom: 18,
+        subdomains: ["1", "2", "3", "4"],
       }).addTo(map);
+
+      gaode.on("tileerror", () => {
+        tileFailCount++;
+        if (tileFailCount >= 5) {
+          gaode.remove();
+          L.tileLayer(CARTO_URL, { maxZoom: 19 }).addTo(map);
+          tileFailCount = -999;
+        }
+      });
 
       mapInstanceRef.current = map;
       setMapReady(true);
     });
 
-    return () => { mapInstanceRef.current?.remove(); mapInstanceRef.current = null; };
+    return () => {
+      mapInstanceRef.current?.remove();
+      mapInstanceRef.current = null;
+    };
   }, []);
 
-  // Add/update markers whenever trips or mapReady changes
+  // --- Render city polygons + markers ---
   useEffect(() => {
     if (!mapReady) return;
 
-    import("leaflet").then((L) => {
+    import("leaflet").then(async (L) => {
       const map = mapInstanceRef.current;
       if (!map) return;
 
-      // Clear old markers
-      markersRef.current.forEach(m => m.remove());
-      markersRef.current = [];
+      // Clear previous
+      layersRef.current.forEach((l) => l.remove());
+      layersRef.current = [];
 
-      trips.forEach((trip) => {
-        const color = getRatingColor(trip.rating);
-        const circle = L.circleMarker([trip.latitude, trip.longitude], {
-          radius: 6, fillColor: color, color: color,
-          weight: 2, opacity: 0.8, fillOpacity: 0.4,
-        }).addTo(map);
+      // Load city boundary GeoJSON (static + dynamic from Supabase)
+      let geoJSON: FeatureCollection | null = null;
+      try {
+        const res = await fetch("/api/city-boundaries");
+        if (res.ok) geoJSON = await res.json();
+      } catch { /* ignore */ }
 
-        const pulse = L.circleMarker([trip.latitude, trip.longitude], {
-          radius: 14, fillColor: "transparent", color: color,
-          weight: 1, opacity: 0.3, fillOpacity: 0,
-        }).addTo(map);
+      // Group trips by city name (prefer explicit city_name, fall back to parsing location)
+      const cityMap = new Map<string, Trip[]>();
+      trips.forEach((t) => {
+        const c = t.city_name || extractCityName(t.location);
+        const arr = cityMap.get(c);
+        if (arr) arr.push(t);
+        else cityMap.set(c, [t]);
+      });
 
-        circle.bindPopup(`
-          <div style="color:#fff;background:#1a1a2e;padding:8px 12px;border-radius:8px;font-family:system-ui;">
-            <div style="font-weight:700;font-size:13px;">${trip.title}</div>
-            <div style="color:#aaa;font-size:11px;">${trip.date}</div>
-          </div>
-        `);
+      cityMap.forEach((cityTrips, cityName) => {
+        const avgRating = Math.round(cityTrips.reduce((s, t) => s + t.rating, 0) / cityTrips.length);
+        const c = color(avgRating);
 
-        circle.on("mouseover", () => { pulse.setRadius(22); pulse.setStyle({ opacity: 0.6 }); });
-        circle.on("mouseout", () => { pulse.setRadius(14); pulse.setStyle({ opacity: 0.3 }); });
+        // Try boundary polygon (use city_name as the primary key for matching)
+        const feature = geoJSON
+          ? matchCityBoundary(cityName, geoJSON)
+          : null;
 
-        markersRef.current.push(circle, pulse);
+        if (feature) {
+          // Glow halo
+          const glow = L.geoJSON(feature, {
+            style: () => ({
+              color: c, weight: 8, opacity: 0.15,
+              fillColor: "transparent", fillOpacity: 0,
+            }),
+          }).addTo(map);
+
+          // Fill + border (solid line, outer perimeter only)
+          const main = L.geoJSON(feature, {
+            style: () => ({
+              color: c, weight: 2, opacity: 0.8,
+              fillColor: c, fillOpacity: 0.1,
+            }),
+          }).addTo(map);
+
+          // Popup
+          const html = cityTrips.map(
+            (t) =>
+              `<div style="margin:3px 0;font-size:12px;border-left:2px solid ${color(t.rating)};padding-left:6px;">${t.title} <span style="color:#888;font-size:10px;">${formatDateRange(t.date, t.end_date)}</span></div>`,
+          ).join("");
+          main.bindPopup(`
+            <div style="color:#fff;background:#111;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:160px;">
+              <div style="font-weight:700;font-size:14px;margin-bottom:6px;">${cityName}</div>
+              ${html}
+            </div>
+          `);
+
+          // Hover
+          main.on("mouseover", () => {
+            main.setStyle({ fillOpacity: 0.25, opacity: 1, weight: 3 });
+            glow.setStyle({ opacity: 0.35, weight: 14 });
+          });
+          main.on("mouseout", () => {
+            main.setStyle({ color: c, weight: 2, opacity: 0.8, fillColor: c, fillOpacity: 0.1 });
+            glow.setStyle({ color: c, weight: 8, opacity: 0.15, fillColor: "transparent", fillOpacity: 0 });
+          });
+
+          layersRef.current.push(glow, main);
+        } else {
+          // Fallback marker — convert WGS-84 to GCJ-02 for Gaode alignment
+          const gcj = wgs84ToGcj02(cityTrips[0].latitude, cityTrips[0].longitude);
+
+          const circle = L.circleMarker([gcj.lat, gcj.lng], {
+            radius: 9, fillColor: c, color: c,
+            weight: 2, opacity: 0.9, fillOpacity: 0.4,
+          }).addTo(map);
+
+          const pulse = L.circleMarker([gcj.lat, gcj.lng], {
+            radius: 18, fillColor: "transparent", color: c,
+            weight: 1.5, opacity: 0.35, fillOpacity: 0,
+          }).addTo(map);
+
+          const html = cityTrips.map(
+            (t) =>
+              `<div style="margin:3px 0;font-size:12px;border-left:2px solid ${color(t.rating)};padding-left:6px;">${t.title} <span style="color:#888;font-size:10px;">${formatDateRange(t.date, t.end_date)}</span></div>`,
+          ).join("");
+          circle.bindPopup(`
+            <div style="color:#fff;background:#111;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:160px;">
+              <div style="font-weight:700;font-size:14px;margin-bottom:6px;">${cityTrips[0].location}</div>
+              ${html}
+            </div>
+          `);
+
+          circle.on("mouseover", () => {
+            pulse.setRadius(28); pulse.setStyle({ opacity: 0.65 });
+          });
+          circle.on("mouseout", () => {
+            pulse.setRadius(18); pulse.setStyle({ opacity: 0.35 });
+          });
+
+          layersRef.current.push(circle, pulse);
+        }
       });
     });
   }, [trips, mapReady]);
@@ -84,16 +189,16 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
   return (
     <div className="relative w-full h-[500px] overflow-hidden">
       <div ref={mapRef} className="w-full h-full" role="img" aria-label="旅行足迹地图" />
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-bg via-bg/60 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-canvas via-canvas/60 to-transparent pointer-events-none" />
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center z-[1000] pointer-events-none">
-        <p className="text-xs uppercase tracking-[4px] text-white/30 mb-3">Where I&apos;ve Been</p>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white drop-shadow-[0_0_60px_rgba(0,0,0,0.9)]">
+        <p className="text-xs uppercase tracking-[4px] text-on-dark/50 mb-3">Where I&apos;ve Been</p>
+        <h1 className="font-display text-4xl font-normal tracking-[-0.5px] text-on-dark drop-shadow-[0_0_60px_rgba(0,0,0,0.9)]">
           Cloutains 的旅程
         </h1>
         <div className="flex items-center gap-3 mt-3 justify-center">
-          <span className="text-sm text-white/40">{trips.length} 段旅程</span>
-          <span className="w-1 h-1 rounded-full bg-white/20" />
-          <span className="text-sm text-white/40">用脚步丈量世界</span>
+          <span className="text-sm text-on-dark/60">{trips.length} 段旅程</span>
+          <span className="w-1 h-1 rounded-full bg-on-dark/30" />
+          <span className="text-sm text-on-dark/60">用脚步丈量世界</span>
         </div>
       </div>
     </div>
