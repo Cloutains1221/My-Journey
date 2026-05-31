@@ -24,6 +24,21 @@ function generateSlug(title: string, date?: string): string {
   return `trip-${Date.now()}`;
 }
 
+async function uniqueSlug(base: string): Promise<string> {
+  let slug = base;
+  let counter = 2;
+  while (true) {
+    const { data } = await supabaseAdmin
+      .from("trips")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!data) return slug;
+    slug = `${base}-${counter}`;
+    counter++;
+  }
+}
+
 /**
  * Auto-add city boundary for a newly created trip.
  * Runs in background — failure does not block trip creation.
@@ -87,7 +102,8 @@ export async function POST(request: Request) {
   if (!(await checkAuth())) return NextResponse.json({ error: "未授权" }, { status: 401 });
   const body = await request.json();
   const { title, slug: customSlug, date, end_date, location, city_name, latitude, longitude, cover_image, content, rating } = body;
-  const slug = customSlug || generateSlug(title || "", date);
+  const baseSlug = customSlug || generateSlug(title || "", date);
+  const slug = await uniqueSlug(baseSlug);
   const { data, error } = await supabaseAdmin.from("trips").insert({
     title, slug, date, end_date: end_date || null, location, city_name: city_name || null, latitude, longitude, cover_image, content, rating
   }).select().single();
