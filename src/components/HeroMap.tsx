@@ -23,7 +23,7 @@ const GAODE_URL =
 const CARTO_URL =
   "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 
-export default function HeroMap({ trips }: { trips: Trip[] }) {
+export default function HeroMap({ trips, cityCount, latestDate }: { trips: Trip[]; cityCount?: number; latestDate?: string }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layersRef = useRef<L.Layer[]>([]);
@@ -190,30 +190,43 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
     <div className="relative w-full h-[500px] overflow-hidden">
       <div ref={mapRef} className="w-full h-full" role="img" aria-label="旅行足迹地图" />
 
-      {/* Coral glow overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(204,120,92,0.05)_0%,transparent_70%)] pointer-events-none" />
+      {/* Frosted glass card — bottom-left */}
+      <div className="absolute bottom-10 left-6 sm:left-10 z-[1000] max-w-md">
+        <div className="rounded-2xl bg-black/25 backdrop-blur-xl border border-white/10 px-6 py-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+          <p className="text-[11px] uppercase tracking-[4px] text-white/50 mb-2 font-sans">
+            Where I&apos;ve Been
+          </p>
+          <h1 className="font-display text-3xl sm:text-4xl font-normal tracking-[-0.5px] text-white">
+            Cloutains <span className="text-white/50 font-light">的旅程</span>
+          </h1>
+          <p className="text-xs text-white/40 mt-2 tracking-wider font-sans">
+            用脚步丈量世界
+          </p>
 
-      {/* Bottom gradient - deeper */}
-      <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-canvas via-canvas/80 via-40% to-transparent pointer-events-none" />
-
-      {/* Title overlay */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-center z-[1000] pointer-events-none">
-        <p data-animate className="text-xs uppercase tracking-[4px] text-on-dark/50 mb-3" style={{ animationDelay: "0.2s" }}>
-          Where I&apos;ve Been
-        </p>
-        <h1 data-animate className="font-display text-4xl sm:text-5xl md:text-6xl font-normal tracking-[-0.5px] text-on-dark drop-shadow-[0_2px_40px_rgba(0,0,0,0.8)]" style={{ animationDelay: "0.4s" }}>
-          Cloutains <span className="text-on-dark/60 font-light">的旅程</span>
-        </h1>
-        <div data-animate className="flex items-center gap-3 mt-3 justify-center" style={{ animationDelay: "0.6s" }}>
-          <span className="text-sm text-on-dark/60">{trips.length} 段旅程</span>
-          <span className="w-1 h-1 rounded-full bg-on-dark/30" />
-          <span className="text-sm text-on-dark/60">用脚步丈量世界</span>
+          {/* Stats row */}
+          <div className="flex items-end gap-5 mt-5 pt-5 border-t border-white/10">
+            <div className="flex flex-col">
+              <span className="font-display text-3xl text-white tabular-nums tracking-[-0.5px]">{trips.length}</span>
+              <span className="text-[10px] text-white/40 mt-0.5 font-sans tracking-wide">段旅程</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-display text-3xl text-primary tabular-nums tracking-[-0.5px]">{cityCount || "—"}</span>
+              <span className="text-[10px] text-white/40 mt-0.5 font-sans tracking-wide">座城市</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-display text-2xl text-white tabular-nums tracking-[-0.5px]">{latestDate || "—"}</span>
+              <span className="text-[10px] text-white/40 mt-0.5 font-sans tracking-wide">最近记录</span>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Bottom gradient — lighter, no need to hide title */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-canvas/80 to-transparent pointer-events-none" />
+
       {/* Scroll indicator */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 animate-bounce pointer-events-none">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-dark/30">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 animate-bounce pointer-events-none z-[1000]">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/30">
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </div>
