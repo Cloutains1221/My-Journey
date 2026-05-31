@@ -1,6 +1,25 @@
 import type { AgreementVote, DesireVote } from "@/lib/types";
 import { AGREEMENT_LABELS, DESIRE_LABELS } from "@/lib/types";
 
+function relativeTime(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffMs = now - then;
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHour = Math.floor(diffMs / 3600000);
+  const diffDay = Math.floor(diffMs / 86400000);
+  const diffWeek = Math.floor(diffDay / 7);
+  const diffMonth = Math.floor(diffDay / 30);
+
+  if (diffMin < 1) return "刚刚";
+  if (diffMin < 60) return `${diffMin}分钟前`;
+  if (diffHour < 24) return `${diffHour}小时前`;
+  if (diffDay < 7) return `${diffDay}天前`;
+  if (diffWeek < 5) return `${diffWeek}周前`;
+  if (diffMonth < 12) return `${diffMonth}个月前`;
+  return `${Math.floor(diffDay / 365)}年前`;
+}
+
 export default function VisitorComments({
   agreementVotes,
   desireVotes,
@@ -11,8 +30,8 @@ export default function VisitorComments({
   if (agreementVotes.length === 0 && desireVotes.length === 0) {
     return (
       <div className="py-8 border-t border-hairline">
-        <p className="text-xs uppercase tracking-[3px] text-muted-soft mb-6 font-medium">访客回声</p>
-        <p className="text-sm text-muted">还没有人留下评价，来做第一个吧</p>
+        <p className="text-xs uppercase tracking-[3px] text-muted-soft mb-6 font-medium font-sans">访客回声</p>
+        <p className="text-sm text-muted font-sans">还没有人留下评价，来做第一个吧</p>
       </div>
     );
   }
@@ -28,13 +47,21 @@ export default function VisitorComments({
 
   return (
     <div className="py-8 border-t border-hairline">
-      <p className="text-xs uppercase tracking-[3px] text-muted-soft mb-6 font-medium">访客回声</p>
-      <div className="flex flex-col gap-4">
+      <p className="text-xs uppercase tracking-[3px] text-muted-soft mb-6 font-medium font-sans">访客回声</p>
+      <div className="flex flex-col divide-y divide-hairline-soft">
         {all.map((item, i) => (
-          <div key={i} className="p-5 rounded-xl bg-surface-card border border-hairline-soft">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-ink/80 font-semibold text-sm">{item.nickname}</span>
-              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
+          <div key={i} className="py-4 first:pt-0 last:pb-0">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center flex-shrink-0 font-sans">
+                {item.nickname.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-ink/80 font-semibold text-sm font-sans">{item.nickname}</span>
+                  <span className="text-[10px] text-muted-soft font-sans">{relativeTime(item.time)}</span>
+                </div>
+              </div>
+              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium flex-shrink-0 font-sans ${
                 item.type === "agreement"
                   ? "bg-accent-teal/10 border-accent-teal/30 text-accent-teal"
                   : "bg-primary/10 border-primary/30 text-primary"
@@ -42,7 +69,7 @@ export default function VisitorComments({
                 {item.type === "agreement" ? "✓ " : "🔥 "}{item.label}
               </span>
             </div>
-            {item.comment && <p className="text-sm text-body leading-relaxed">{item.comment}</p>}
+            {item.comment && <p className="text-sm text-body leading-relaxed pl-11 font-sans">{item.comment}</p>}
           </div>
         ))}
       </div>

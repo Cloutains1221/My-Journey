@@ -189,17 +189,33 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
   return (
     <div className="relative w-full h-[500px] overflow-hidden">
       <div ref={mapRef} className="w-full h-full" role="img" aria-label="旅行足迹地图" />
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-canvas via-canvas/60 to-transparent pointer-events-none" />
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center z-[1000] pointer-events-none">
-        <p className="text-xs uppercase tracking-[4px] text-on-dark/50 mb-3">Where I&apos;ve Been</p>
-        <h1 className="font-display text-4xl font-normal tracking-[-0.5px] text-on-dark drop-shadow-[0_0_60px_rgba(0,0,0,0.9)]">
-          Cloutains 的旅程
+
+      {/* Coral glow overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(204,120,92,0.05)_0%,transparent_70%)] pointer-events-none" />
+
+      {/* Bottom gradient - deeper */}
+      <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-canvas via-canvas/80 via-40% to-transparent pointer-events-none" />
+
+      {/* Title overlay */}
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-center z-[1000] pointer-events-none">
+        <p data-animate className="text-xs uppercase tracking-[4px] text-on-dark/50 mb-3" style={{ animationDelay: "0.2s" }}>
+          Where I&apos;ve Been
+        </p>
+        <h1 data-animate className="font-display text-4xl sm:text-5xl md:text-6xl font-normal tracking-[-0.5px] text-on-dark drop-shadow-[0_2px_40px_rgba(0,0,0,0.8)]" style={{ animationDelay: "0.4s" }}>
+          Cloutains <span className="text-on-dark/60 font-light">的旅程</span>
         </h1>
-        <div className="flex items-center gap-3 mt-3 justify-center">
+        <div data-animate className="flex items-center gap-3 mt-3 justify-center" style={{ animationDelay: "0.6s" }}>
           <span className="text-sm text-on-dark/60">{trips.length} 段旅程</span>
           <span className="w-1 h-1 rounded-full bg-on-dark/30" />
           <span className="text-sm text-on-dark/60">用脚步丈量世界</span>
         </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 animate-bounce pointer-events-none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-dark/30">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
       </div>
     </div>
   );

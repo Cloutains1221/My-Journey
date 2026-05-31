@@ -40,44 +40,57 @@ export default function AgreementVote({ tripId }: { tripId: string }) {
   }
 
   if (submitted) {
-    return <p className="text-sm text-accent-teal font-medium py-4">✅ 你的评价已提交，感谢反馈！</p>;
+    return <p className="text-sm text-accent-teal font-medium py-4 font-sans">✅ 你的评价已提交，感谢反馈！</p>;
   }
+
+  const indicatorPos = agreement ? `${(agreement - 1) * 25}%` : "-10px";
 
   return (
     <form onSubmit={handleSubmit} className="py-8 border-t border-hairline">
       <h3 className="text-lg font-semibold text-ink mb-1 font-sans">你认同博主的这个评级吗？</h3>
-      <p className="text-sm text-muted mb-5">选择你的认可度</p>
+      <p className="text-sm text-muted mb-5 font-sans">选择你的认可度</p>
+
+      {/* Spectrum bar */}
+      <div className="relative h-2 rounded-full bg-gradient-to-r from-accent-teal/40 via-surface-card to-primary/40 mb-5">
+        {agreement && (
+          <div
+            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-ink border-2 border-canvas shadow-sm transition-all duration-300"
+            style={{ left: indicatorPos, transform: "translate(-50%, -50%)" }}
+          />
+        )}
+      </div>
+
       <div className="flex gap-2 mb-4 flex-wrap">
         {[1, 2, 3, 4, 5].map((v) => (
           <button
             key={v}
             type="button"
             onClick={() => setAgreement(v)}
-            className={`px-4 py-2 rounded-full text-sm font-medium border transition-all cursor-pointer ${COLORS[v]} ${agreement === v ? ACTIVE[v] : ""}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium border transition-all cursor-pointer font-sans ${COLORS[v]} ${agreement === v ? ACTIVE[v] : ""}`}
           >
             {AGREEMENT_LABELS[v]}
           </button>
         ))}
       </div>
-      <div className="flex gap-3 items-center">
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
         <input
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           placeholder="你的昵称"
           maxLength={20}
-          className="w-40 bg-canvas border border-hairline rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-muted-soft outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+          className="w-full sm:w-40 bg-canvas border border-hairline rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-muted-soft outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 font-sans"
         />
         <input
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="说点什么吧（可选）"
           maxLength={200}
-          className="flex-1 bg-canvas border border-hairline rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-muted-soft outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+          className="flex-1 bg-canvas border border-hairline rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-muted-soft outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 font-sans"
         />
         <button
           type="submit"
           disabled={!agreement || !nickname.trim() || submitting}
-          className="px-6 py-2.5 bg-primary text-on-primary rounded-lg text-sm font-medium disabled:opacity-30 hover:bg-primary-active transition-colors"
+          className="px-6 py-2.5 bg-primary text-on-primary rounded-lg text-sm font-medium disabled:opacity-30 hover:bg-primary-active transition-colors font-sans whitespace-nowrap"
         >
           {submitting ? "提交中..." : "提交"}
         </button>

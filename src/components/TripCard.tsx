@@ -2,6 +2,14 @@ import Link from "next/link";
 import type { Trip } from "@/lib/types";
 import { formatDateRange } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
+import RatingBadge from "@/components/RatingBadge";
+
+const PinIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block text-muted-soft -mt-px">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
 
 export default async function TripCard({ trip, index = 0 }: { trip: Trip; index?: number }) {
   const { count } = await supabase
@@ -17,55 +25,43 @@ export default async function TripCard({ trip, index = 0 }: { trip: Trip; index?
         <div className="w-2.5 h-2.5 rounded-full bg-hairline border-2 border-canvas group-hover:bg-primary group-hover:scale-125 transition-all duration-300" />
       </div>
 
-      <article className="flex gap-5 md:gap-7 p-5 md:pl-14 rounded-xl bg-surface-card border border-hairline-soft hover:border-hairline hover:shadow-sm transition-all duration-300">
-        <div className="w-[130px] h-[100px] md:w-[170px] md:h-[130px] rounded-lg overflow-hidden flex-shrink-0 bg-surface-cream-strong">
+      <article className="flex flex-col sm:flex-row gap-0 sm:gap-5 md:gap-7 p-4 sm:p-5 md:pl-14 rounded-xl bg-surface-card border border-hairline-soft shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] hover:border-primary/20 hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08),0_8px_32px_rgba(204,120,92,0.06)] transition-all duration-500 ease-out">
+        <div className="relative w-full h-40 sm:w-[130px] sm:h-[100px] md:w-[170px] md:h-[130px] rounded-lg overflow-hidden flex-shrink-0 bg-surface-cream-strong">
           {trip.cover_image ? (
-            <img src={trip.cover_image} alt={trip.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <img src={trip.cover_image} alt={trip.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-surface-cream-strong text-2xl">🏔️</div>
+            <div className="w-full h-full flex items-center justify-center text-surface-cream-strong text-2xl">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L2 22h20L12 2z" opacity="0.3" /></svg>
+            </div>
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
         </div>
-        <div className="flex flex-col justify-between flex-1 min-w-0">
+        <div className="flex flex-col justify-between flex-1 min-w-0 pt-3 sm:pt-0">
           <div>
             <div className="flex items-center gap-3 mb-1.5">
-              <span className="text-xs text-muted">{formatDateRange(trip.date, trip.end_date)}</span>
+              <span className="text-xs text-muted font-sans">{formatDateRange(trip.date, trip.end_date)}</span>
               <RatingBadge rating={trip.rating} />
             </div>
             <h3 className="text-lg font-semibold text-ink mb-1.5 truncate group-hover:text-primary transition-colors font-sans">
               {trip.title}
             </h3>
             {trip.location && (
-              <p className="text-xs text-muted-soft mb-1.5">📍 {trip.location}</p>
+              <p className="text-xs text-muted-soft mb-1.5 flex items-center gap-1 font-sans">
+                <PinIcon /> {trip.location}
+              </p>
             )}
-            <p className="text-sm text-body leading-relaxed line-clamp-2">
+            <p className="text-sm text-body leading-relaxed line-clamp-2 font-sans">
               {trip.content?.replace(/[#*`>]/g, "").slice(0, 120) || "暂无文字记录"}
             </p>
           </div>
           <div className="flex items-center gap-4 mt-3">
-            <p className="text-xs text-muted-soft">{photoCount} 张照片</p>
-            <span className="text-xs text-primary/0 group-hover:text-primary transition-all ml-auto font-medium">
+            <p className="text-xs text-muted-soft font-sans">{photoCount} 张照片</p>
+            <span className="text-xs text-primary/0 group-hover:text-primary transition-all ml-auto font-medium font-sans">
               查看详情 →
             </span>
           </div>
         </div>
       </article>
     </Link>
-  );
-}
-
-/** Inline rating badge matching the warm palette */
-function RatingBadge({ rating }: { rating: number }) {
-  const labels: Record<number, string> = { 1: "拉完了", 2: "npc", 3: "人上人", 4: "顶级", 5: "夯" };
-  const colors: Record<number, string> = {
-    1: "bg-hairline text-muted",
-    2: "bg-hairline text-muted",
-    3: "bg-accent-teal/15 text-accent-teal",
-    4: "bg-accent-amber/15 text-accent-amber",
-    5: "bg-primary/15 text-primary",
-  };
-  return (
-    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${colors[rating] ?? colors[5]}`}>
-      {labels[rating] ?? "?"}
-    </span>
   );
 }

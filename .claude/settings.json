@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git *)",
+      "Bash(npx *)"
+    ],
+    "deny": []
+  },
+  "context": {
+    "excludePatterns": [
+      "node_modules/**",
+      ".next/**",
+      "public/**",
+      "*.png",
+      "*.jpg",
+      "*.jpeg",
+      "*.gif",
+      "*.webp"
+    ]
+  }
+}

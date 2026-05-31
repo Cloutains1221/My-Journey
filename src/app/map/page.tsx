@@ -181,12 +181,12 @@ export default function MapPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-64px)]">
       <div ref={mapRef} className="flex-1 w-full" role="img" aria-label="旅行足迹全屏地图" />
-      <div className="bg-canvas border-t border-hairline px-8 py-4 flex gap-4 overflow-x-auto">
+      <div className="bg-canvas border-t border-hairline px-4 sm:px-8 py-4 flex gap-3 sm:gap-4 overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
         {trips.map((trip) => (
           <Link
             key={trip.id}
             href={`/trip/${trip.slug}`}
-            className="flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-hairline-soft hover:border-hairline hover:shadow-sm flex-shrink-0 min-w-[200px] transition-all"
+            className="flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-hairline-soft hover:border-primary/20 hover:shadow-sm flex-shrink-0 min-w-[180px] sm:min-w-[200px] transition-all"
           >
             <div className="w-10 h-10 rounded-lg bg-surface-cream-strong flex-shrink-0 overflow-hidden">
               {trip.cover_image && (
