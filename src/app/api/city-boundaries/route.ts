@@ -39,7 +39,11 @@ export async function GET() {
       features: [...staticFeatures, ...dynamicFeatures],
     };
 
-    return NextResponse.json(collection);
+    return NextResponse.json(collection, {
+      headers: {
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

@@ -23,6 +23,27 @@ const GAODE_URL =
 const CARTO_URL =
   "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 
+// ---- Shared Leaflet import (dedup across effects) ----
+let _L: typeof import("leaflet") | null = null;
+async function getLeaflet() {
+  if (!_L) _L = await import("leaflet");
+  return _L;
+}
+
+// ---- Client-side GeoJSON cache ----
+let _boundariesCache: FeatureCollection | null = null;
+async function loadBoundaries(): Promise<FeatureCollection | null> {
+  if (_boundariesCache) return _boundariesCache;
+  try {
+    const res = await fetch("/api/city-boundaries");
+    if (res.ok) {
+      _boundariesCache = await res.json();
+      return _boundariesCache;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
 export default function HeroMap({ trips }: { trips: Trip[] }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -33,7 +54,7 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    import("leaflet").then((L) => {
+    getLeaflet().then((L) => {
       if (!mapRef.current || mapInstanceRef.current) return;
 
       const map = L.map(mapRef.current, {
@@ -43,6 +64,7 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
         dragging: true,
         zoomControl: false,
         attributionControl: false,
+        renderer: L.canvas(),
       });
 
       // Gaode tiles with CARTO fallback
@@ -75,7 +97,7 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
   useEffect(() => {
     if (!mapReady) return;
 
-    import("leaflet").then(async (L) => {
+    getLeaflet().then(async (L) => {
       const map = mapInstanceRef.current;
       if (!map) return;
 
@@ -83,12 +105,8 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
       layersRef.current.forEach((l) => l.remove());
       layersRef.current = [];
 
-      // Load city boundary GeoJSON (static + dynamic from Supabase)
-      let geoJSON: FeatureCollection | null = null;
-      try {
-        const res = await fetch("/api/city-boundaries");
-        if (res.ok) geoJSON = await res.json();
-      } catch { /* ignore */ }
+      // Load city boundary GeoJSON (cached after first fetch)
+      const geoJSON = await loadBoundaries();
 
       // Group trips by city name (prefer explicit city_name, fall back to parsing location)
       const cityMap = new Map<string, Trip[]>();

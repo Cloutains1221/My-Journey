@@ -19,6 +19,27 @@ const GAODE_URL =
 const CARTO_URL =
   "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 
+// ---- Shared Leaflet import (dedup across effects) ----
+let _L: typeof import("leaflet") | null = null;
+async function getLeaflet() {
+  if (!_L) _L = await import("leaflet");
+  return _L;
+}
+
+// ---- Client-side GeoJSON cache ----
+let _boundariesCache: FeatureCollection | null = null;
+async function loadBoundaries(): Promise<FeatureCollection | null> {
+  if (_boundariesCache) return _boundariesCache;
+  try {
+    const res = await fetch("/api/city-boundaries");
+    if (res.ok) {
+      _boundariesCache = await res.json();
+      return _boundariesCache;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -45,7 +66,7 @@ export default function MapPage() {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    import("leaflet").then((L) => {
+    getLeaflet().then((L) => {
       if (mapInstanceRef.current) return;
 
       const map = L.map(mapRef.current!, {
@@ -53,6 +74,7 @@ export default function MapPage() {
         zoom: 4,
         scrollWheelZoom: true,
         zoomControl: true,
+        renderer: L.canvas(),
       });
 
       let tileFailCount = 0;
@@ -87,18 +109,14 @@ export default function MapPage() {
   useEffect(() => {
     if (!mapReady || trips.length === 0) return;
 
-    import("leaflet").then(async (L) => {
+    getLeaflet().then(async (L) => {
       const map = mapInstanceRef.current;
       if (!map) return;
 
       layersRef.current.forEach((l) => l.remove());
       layersRef.current = [];
 
-      let geoJSON: FeatureCollection | null = null;
-      try {
-        const res = await fetch("/api/city-boundaries");
-        if (res.ok) geoJSON = await res.json();
-      } catch { /* ignore */ }
+      const geoJSON = await loadBoundaries();
 
       const cityMap = new Map<string, Trip[]>();
       trips.forEach((t) => {
