@@ -29,24 +29,42 @@ export default async function HomePage() {
 
   return (
     <div>
-      <HeroMap trips={tripList} cityCount={cityCount} latestDate={latestDate} />
+      <HeroMap trips={tripList} />
+
+      {/* Info section — below map */}
+      <div className="bg-canvas border-b border-hairline">
+        <div className="max-w-3xl mx-auto px-6 sm:px-8 py-8 sm:py-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 sm:gap-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-[4px] text-muted-soft mb-2 font-medium font-sans">
+              Where I&apos;ve Been
+            </p>
+            <h1 className="font-display text-3xl sm:text-4xl font-normal tracking-[-0.5px] text-ink">
+              Cloutains <span className="text-muted-soft font-light">的旅程</span>
+            </h1>
+            <p className="text-xs text-muted mt-1.5 tracking-wider font-sans">
+              用脚步丈量世界
+            </p>
+          </div>
+
+          <div className="flex items-end gap-5 sm:gap-7">
+            <div className="flex flex-col">
+              <span className="font-display text-3xl sm:text-4xl text-ink tabular-nums tracking-[-0.5px]">{tripList.length}</span>
+              <span className="text-[10px] text-muted-soft mt-0.5 font-sans tracking-wide">段旅程</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-display text-3xl sm:text-4xl text-primary tabular-nums tracking-[-0.5px]">{cityCount || "—"}</span>
+              <span className="text-[10px] text-muted-soft mt-0.5 font-sans tracking-wide">座城市</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-display text-2xl sm:text-3xl text-ink tabular-nums tracking-[-0.5px]">{latestDate || "—"}</span>
+              <span className="text-[10px] text-muted-soft mt-0.5 font-sans tracking-wide">最近记录</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Timeline section */}
       <section className="max-w-3xl mx-auto px-6 sm:px-8 py-24">
-        <div className="text-center mb-16">
-          <div className="w-12 h-px bg-primary/30 mx-auto mb-6" />
-          <p className="text-xs uppercase tracking-[5px] text-muted-soft mb-4 font-medium font-sans">
-            旅 · 程 · 时 · 间 · 线
-          </p>
-          <h2 className="font-display text-5xl font-normal tracking-[-0.5px] text-ink">
-            走过的路，都算数
-          </h2>
-          <p className="text-base text-muted mt-3 leading-relaxed font-sans">
-            每一段旅程都是生命中独特的印记
-          </p>
-          <div className="w-8 h-px bg-primary/20 mx-auto mt-6" />
-        </div>
-
         {/* Year navigation sidebar */}
         <YearNav years={sortedYears} />
 

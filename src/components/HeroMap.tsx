@@ -23,7 +23,7 @@ const GAODE_URL =
 const CARTO_URL =
   "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 
-export default function HeroMap({ trips, cityCount, latestDate }: { trips: Trip[]; cityCount?: number; latestDate?: string }) {
+export default function HeroMap({ trips }: { trips: Trip[] }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layersRef = useRef<L.Layer[]>([]);
@@ -190,46 +190,27 @@ export default function HeroMap({ trips, cityCount, latestDate }: { trips: Trip[
     <div className="relative w-full h-[500px] overflow-hidden">
       <div ref={mapRef} className="w-full h-full" role="img" aria-label="旅行足迹地图" />
 
-      {/* Frosted glass card — bottom-left */}
-      <div className="absolute bottom-10 left-6 sm:left-10 z-[1000] max-w-md">
-        <div className="rounded-2xl bg-black/25 backdrop-blur-xl border border-white/10 px-6 py-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-          <p className="text-[11px] uppercase tracking-[4px] text-white/50 mb-2 font-sans">
-            Where I&apos;ve Been
-          </p>
-          <h1 className="font-display text-3xl sm:text-4xl font-normal tracking-[-0.5px] text-white">
-            Cloutains <span className="text-white/50 font-light">的旅程</span>
-          </h1>
-          <p className="text-xs text-white/40 mt-2 tracking-wider font-sans">
-            用脚步丈量世界
-          </p>
-
-          {/* Stats row */}
-          <div className="flex items-end gap-5 mt-5 pt-5 border-t border-white/10">
-            <div className="flex flex-col">
-              <span className="font-display text-3xl text-white tabular-nums tracking-[-0.5px]">{trips.length}</span>
-              <span className="text-[10px] text-white/40 mt-0.5 font-sans tracking-wide">段旅程</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-display text-3xl text-primary tabular-nums tracking-[-0.5px]">{cityCount || "—"}</span>
-              <span className="text-[10px] text-white/40 mt-0.5 font-sans tracking-wide">座城市</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-display text-2xl text-white tabular-nums tracking-[-0.5px]">{latestDate || "—"}</span>
-              <span className="text-[10px] text-white/40 mt-0.5 font-sans tracking-wide">最近记录</span>
-            </div>
-          </div>
-        </div>
+      {/* Zoom controls */}
+      <div className="absolute right-4 bottom-6 z-[1000] flex flex-col rounded-lg overflow-hidden border border-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+        <button
+          onClick={() => mapInstanceRef.current?.zoomIn()}
+          className="w-9 h-9 flex items-center justify-center bg-black/25 backdrop-blur-md text-white/70 hover:bg-white/15 hover:text-white transition-colors text-lg leading-none select-none"
+          aria-label="放大"
+        >
+          +
+        </button>
+        <div className="h-px bg-white/10" />
+        <button
+          onClick={() => mapInstanceRef.current?.zoomOut()}
+          className="w-9 h-9 flex items-center justify-center bg-black/25 backdrop-blur-md text-white/70 hover:bg-white/15 hover:text-white transition-colors text-lg leading-none select-none"
+          aria-label="缩小"
+        >
+          −
+        </button>
       </div>
 
-      {/* Bottom gradient — lighter, no need to hide title */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-canvas/80 to-transparent pointer-events-none" />
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 animate-bounce pointer-events-none z-[1000]">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/30">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </div>
+      {/* Bottom gradient */}
+      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-canvas to-transparent pointer-events-none" />
     </div>
   );
 }

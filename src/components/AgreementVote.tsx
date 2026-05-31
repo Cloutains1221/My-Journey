@@ -84,7 +84,7 @@ export default function AgreementVote({ tripId }: { tripId: string }) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="说点什么吧（可选）"
-          maxLength={200}
+          maxLength={500}
           className="flex-1 bg-canvas border border-hairline rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-muted-soft outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 font-sans"
         />
         <button
