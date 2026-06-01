@@ -360,12 +360,12 @@ export default function AdminClient() {
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <label className="text-xs text-muted mb-1.5 block">纬度</label>
-                    <input type="number" step="0.01" value={editing.latitude || ""} onChange={(e) => setEditing({ ...editing, latitude: parseFloat(e.target.value) })}
+                    <input type="number" step="0.000001" value={editing.latitude || ""} onChange={(e) => setEditing({ ...editing, latitude: parseFloat(e.target.value) })}
                       className={inputClass} />
                   </div>
                   <div className="flex-1">
                     <label className="text-xs text-muted mb-1.5 block">经度</label>
-                    <input type="number" step="0.01" value={editing.longitude || ""} onChange={(e) => setEditing({ ...editing, longitude: parseFloat(e.target.value) })}
+                    <input type="number" step="0.000001" value={editing.longitude || ""} onChange={(e) => setEditing({ ...editing, longitude: parseFloat(e.target.value) })}
                       className={inputClass} />
                   </div>
                 </div>
