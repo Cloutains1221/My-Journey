@@ -402,7 +402,13 @@ export const CITY_ADCODE_MAP: Record<string, string> = {
   "塔城": "654200",
   "阿勒泰": "654300",
 
-  // ===== 省直辖/特殊县级市 =====
+  // ===== 省直辖/特殊县级单位 =====
+  // 湖北省直辖
+  "神农架": "429021",
+  "仙桃": "429004",
+  "潜江": "429005",
+  "天门": "429006",
+  // 其他
   "敦煌": "620982",
 };
 
@@ -413,8 +419,35 @@ export const CITY_ADCODE_MAP: Record<string, string> = {
 export function lookupAdcode(cityName: string): string | undefined {
   // Direct match
   if (CITY_ADCODE_MAP[cityName]) return CITY_ADCODE_MAP[cityName];
-  // Try without suffix (e.g. "北京市" → "北京")
-  const stripped = cityName.replace(/[市省自治区]$/, "");
+
+  // Try stripping compound administrative suffixes (longer/more specific first)
+  // e.g. "阿坝藏族羌族自治州" → "阿坝", "湘西土家族苗族自治州" → "湘西"
+  let stripped = cityName
+    .replace(/土家族苗族自治州$/, "")
+    .replace(/蒙古族藏族自治州$/, "")
+    .replace(/藏族羌族自治州$/, "")
+    .replace(/哈萨克族自治州$/, "")
+    .replace(/柯尔克孜自治州$/, "")
+    .replace(/哈尼族自治州$/, "")
+    .replace(/朝鲜族自治州$/, "")
+    .replace(/蒙古族自治州$/, "")
+    .replace(/白族自治州$/, "")
+    .replace(/彝族自治州$/, "")
+    .replace(/藏族自治州$/, "")
+    .replace(/苗族自治州$/, "")
+    .replace(/回族自治州$/, "")
+    .replace(/壮族自治州$/, "")
+    .replace(/傣族自治州$/, "")
+    .replace(/蒙古自治州$/, "")
+    .replace(/自治州$/, "")
+    .replace(/自治县$/, "")
+    .replace(/市$/, "")
+    .replace(/地区$/, "")
+    .replace(/盟$/, "")
+    .replace(/林区$/, "")
+    .replace(/省$/, "");
+
   if (CITY_ADCODE_MAP[stripped]) return CITY_ADCODE_MAP[stripped];
+
   return undefined;
 }

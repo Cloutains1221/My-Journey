@@ -13,8 +13,12 @@ async function checkAuth() {
  * Fetch and merge all district boundaries for a given adcode from DataV.
  */
 async function fetchCityBoundary(adcode: string) {
-  const url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}_full`;
-  const res = await fetch(url);
+  let url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}_full`;
+  let res = await fetch(url);
+  if (!res.ok) {
+    url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}`;
+    res = await fetch(url);
+  }
   if (!res.ok) throw new Error(`DataV API returned HTTP ${res.status}`);
   const geo = await res.json();
   const features = geo.features;

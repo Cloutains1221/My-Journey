@@ -28,6 +28,8 @@ const PRE_FETCH_CITIES: string[] = [
   "大连", "沈阳",
   "昆明", "大理", "丽江", "西双版纳",
   "贵阳", "遵义", "安顺",
+  "阿坝", "甘孜", "凉山", "湘西", "恩施", "延边",
+  "神农架",
   "桂林", "南宁", "北海",
   "拉萨", "日喀则",
   "三亚", "海口",
@@ -148,23 +150,34 @@ async function main() {
       console.error(`  Skipping ${name}: no adcode in mapping`);
       continue;
     }
-    const url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}_full`;
     console.log(`Fetching ${name} (${adcode})...`);
 
+    // Try _full first (for prefecture-level cities), fall back to bare adcode (for county-level units)
+    let geo: any;
+    let url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}_full`;
+    let res = await fetch(url);
+    if (!res.ok) {
+      url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}`;
+      res = await fetch(url);
+    }
+    if (!res.ok) {
+      console.error(`  Failed: HTTP ${res.status}`);
+      continue;
+    }
     try {
-      const res = await fetch(url);
-      if (!res.ok) {
-        console.error(`  Failed: HTTP ${res.status}`);
-        continue;
-      }
-      const geo = await res.json();
-      const districtFeatures = geo.features;
-      if (!districtFeatures || districtFeatures.length === 0) {
-        console.error(`  No features in response`);
-        continue;
-      }
+      geo = await res.json();
+    } catch {
+      console.error(`  Invalid JSON response`);
+      continue;
+    }
+    const districtFeatures = geo.features;
+    if (!districtFeatures || districtFeatures.length === 0) {
+      console.error(`  No features in response`);
+      continue;
+    }
 
-      // Compute geometric union to dissolve internal district boundaries
+    // Compute geometric union to dissolve internal district boundaries
+    try {
       const unified = unionFeatures(districtFeatures);
       const simplified = simplifyGeometry(unified, tolerance);
 

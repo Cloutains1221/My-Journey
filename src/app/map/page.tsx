@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { Trip } from "@/lib/types";
 import { formatDateRange } from "@/lib/types";
-import { matchCityBoundary, extractCityName } from "@/lib/city-data";
+import { matchCityBoundary } from "@/lib/city-data";
 import type { FeatureCollection } from "@/lib/city-data";
 import { wgs84ToGcj02 } from "@/lib/coords";
 
@@ -120,7 +120,7 @@ export default function MapPage() {
 
       const cityMap = new Map<string, Trip[]>();
       trips.forEach((t) => {
-        const c = t.city_name || extractCityName(t.location);
+        const c = t.city_name || t.location;
         const arr = cityMap.get(c);
         if (arr) arr.push(t);
         else cityMap.set(c, [t]);
@@ -171,26 +171,42 @@ export default function MapPage() {
 
           layersRef.current.push(glow, main);
         } else {
+          // No boundary found — show clickable circle marker with pulse ring
           const gcj = wgs84ToGcj02(cityTrips[0].latitude, cityTrips[0].longitude);
 
+          const pulse = L.circleMarker([gcj.lat, gcj.lng], {
+            radius: 14, fillColor: c, color: c,
+            weight: 1.5, opacity: 0.35, fillOpacity: 0.12,
+          }).addTo(map);
+
           const circle = L.circleMarker([gcj.lat, gcj.lng], {
-            radius: 10, fillColor: c, color: c,
-            weight: 2, opacity: 0.9, fillOpacity: 0.5,
+            radius: 7, fillColor: c, color: c,
+            weight: 2, opacity: 0.9, fillOpacity: 0.45,
           }).addTo(map);
 
           const html = cityTrips.map(
             (t) =>
               `<a href="/trip/${t.slug}" style="color:#fff;text-decoration:none;display:block;margin:3px 0;font-size:12px;border-left:2px solid ${color(t.rating)};padding-left:6px;">${t.title} <span style="color:#888;font-size:10px;">${formatDateRange(t.date, t.end_date)}</span></a>`,
           ).join("");
-          circle.bindPopup(`
+          const popupContent = `
             <div style="color:#fff;background:#111;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:180px;">
               <div style="font-weight:700;font-size:14px;margin-bottom:6px;">${cityTrips[0].location}</div>
               ${cityTrips[0].cover_image ? `<img src="${cityTrips[0].cover_image}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:6px;" />` : ""}
               ${html}
             </div>
-          `);
+          `;
 
-          layersRef.current.push(circle);
+          circle.bindPopup(popupContent);
+          pulse.bindPopup(popupContent);
+
+          circle.on("mouseover", () => {
+            pulse.setRadius(22); pulse.setStyle({ opacity: 0.6, weight: 2 });
+          });
+          circle.on("mouseout", () => {
+            pulse.setRadius(14); pulse.setStyle({ opacity: 0.35, weight: 1.5 });
+          });
+
+          layersRef.current.push(pulse, circle);
         }
       });
     });

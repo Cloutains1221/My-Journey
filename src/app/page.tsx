@@ -24,7 +24,7 @@ export default async function HomePage() {
   }
   const sortedYears = Array.from(yearGroups.keys()).sort((a, b) => b - a);
 
-  const cityCount = new Set(tripList.map(t => t.city_name).filter(Boolean)).size;
+  const cityCount = new Set(tripList.map(t => t.city_name || t.location).filter(Boolean)).size;
   const latestDate = tripList[0]?.date || "—";
 
   return (

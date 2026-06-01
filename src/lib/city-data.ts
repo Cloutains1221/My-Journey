@@ -20,6 +20,39 @@ export interface FeatureCollection {
 // ---------------------------------------------------------------------------
 
 /**
+ * Strip administrative suffixes from a Chinese city name.
+ * "阿坝藏族羌族自治州" → "阿坝"
+ * "神农架林区" → "神农架"
+ * "杭州市" → "杭州"
+ */
+export function stripCitySuffix(name: string): string {
+  return name
+    .replace(/土家族苗族自治州$/, "")
+    .replace(/蒙古族藏族自治州$/, "")
+    .replace(/藏族羌族自治州$/, "")
+    .replace(/哈萨克族自治州$/, "")
+    .replace(/柯尔克孜自治州$/, "")
+    .replace(/哈尼族自治州$/, "")
+    .replace(/朝鲜族自治州$/, "")
+    .replace(/蒙古族自治州$/, "")
+    .replace(/白族自治州$/, "")
+    .replace(/彝族自治州$/, "")
+    .replace(/藏族自治州$/, "")
+    .replace(/苗族自治州$/, "")
+    .replace(/回族自治州$/, "")
+    .replace(/壮族自治州$/, "")
+    .replace(/傣族自治州$/, "")
+    .replace(/蒙古自治州$/, "")
+    .replace(/自治州$/, "")
+    .replace(/自治县$/, "")
+    .replace(/市$/, "")
+    .replace(/地区$/, "")
+    .replace(/盟$/, "")
+    .replace(/林区$/, "")
+    .replace(/省$/, "");
+}
+
+/**
  * Extract the Chinese city name from a location string.
  * "北京, 中国" → "北京"
  * "上海市, 中国" → "上海"
@@ -28,29 +61,33 @@ export interface FeatureCollection {
 export function extractCityName(location: string): string {
   const parts = location.split(/[,，、\s]+/);
   const raw = parts[0]?.trim() ?? "";
-  return raw.replace(/[市省]$/, "");
+  return stripCitySuffix(raw);
 }
 
 /**
  * Match a trip location to a city boundary GeoJSON feature.
- * Uses explicit city_name if available; falls back to parsing from location string.
+ * Tries exact match, then strips suffixes progressively.
  */
 export function matchCityBoundary(
   cityNameOrLocation: string,
   geoJSON: FeatureCollection,
 ): GeoJSONFeature | null {
-  // Try exact match first (for explicit city_name from admin form)
+  // Try exact match
   let feature = geoJSON.features.find(
     (f) => f.properties?.name === cityNameOrLocation,
   );
   if (feature) return feature;
 
-  // Fall back to extracted name from location string
-  const city = extractCityName(cityNameOrLocation);
-  feature = geoJSON.features.find(
-    (f) => f.properties?.name === city,
-  );
-  return feature ?? null;
+  // Try with suffixes stripped
+  const stripped = stripCitySuffix(cityNameOrLocation);
+  if (stripped !== cityNameOrLocation) {
+    feature = geoJSON.features.find(
+      (f) => f.properties?.name === stripped,
+    );
+    if (feature) return feature;
+  }
+
+  return null;
 }
 
 /**

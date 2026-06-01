@@ -66,9 +66,13 @@ async function ensureCityBoundary(cityName: string) {
       if (data.features?.some((f: any) => f.properties?.name === cityName)) return;
     } catch { /* static file might not exist */ }
 
-    // Fetch from DataV
-    const url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}_full`;
-    const res = await fetch(url);
+    // Fetch from DataV (_full for prefecture, bare for county-level)
+    let url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}_full`;
+    let res = await fetch(url);
+    if (!res.ok) {
+      url = `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${adcode}`;
+      res = await fetch(url);
+    }
     if (!res.ok) return;
     const geo = await res.json();
     const features = geo.features;
