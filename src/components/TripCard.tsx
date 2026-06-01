@@ -42,7 +42,7 @@ export default async function TripCard({ trip, index = 0 }: { trip: Trip; index?
               <span className="text-xs text-muted font-sans">{formatDateRange(trip.date, trip.end_date)}</span>
               <RatingBadge rating={trip.rating} />
             </div>
-            <h3 className="text-lg font-semibold text-ink mb-1.5 truncate group-hover:text-primary transition-colors font-sans">
+            <h3 className="text-lg font-semibold font-display text-ink mb-1.5 truncate group-hover:text-primary transition-colors">
               {trip.title}
             </h3>
             {trip.location && (

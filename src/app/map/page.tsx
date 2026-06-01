@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { Trip } from "@/lib/types";
-import { formatDateRange } from "@/lib/types";
+import { formatDateRange, RATING_LABELS } from "@/lib/types";
 import { matchCityBoundary } from "@/lib/city-data";
 import type { FeatureCollection } from "@/lib/city-data";
 import { wgs84ToGcj02 } from "@/lib/coords";
@@ -73,7 +73,7 @@ export default function MapPage() {
         center: [35, 115],
         zoom: 4,
         scrollWheelZoom: true,
-        zoomControl: true,
+        zoomControl: false,
         renderer: L.canvas(),
       });
 
@@ -151,12 +151,21 @@ export default function MapPage() {
           }).addTo(map);
 
           const html = cityTrips.map(
-            (t) =>
-              `<a href="/trip/${t.slug}" style="color:#fff;text-decoration:none;display:block;margin:3px 0;font-size:12px;border-left:2px solid ${color(t.rating)};padding-left:6px;">${t.title} <span style="color:#888;font-size:10px;">${formatDateRange(t.date, t.end_date)}</span></a>`,
+            (t) => {
+              const year = t.date.slice(0, 4);
+              return `
+                <div style="margin:4px 0;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                  <a href="/trip/${t.slug}" style="color:#fff;text-decoration:none;font-size:12px;border-left:2px solid ${color(t.rating)};padding-left:6px;flex:1;min-width:0;" title="查看详情">
+                    <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.title}</div>
+                    <div style="color:#888;font-size:10px;">${formatDateRange(t.date, t.end_date)}</div>
+                  </a>
+                  <a href="/#year-${year}" style="color:#888;text-decoration:none;font-size:10px;padding:3px 6px;border-radius:4px;background:rgba(255,255,255,0.08);white-space:nowrap;flex-shrink:0;" title="滚动到时间轴">📍定位</a>
+                </div>`;
+            }
           ).join("");
           main.bindPopup(`
-            <div style="color:#fff;background:#111;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:180px;">
-              <div style="font-weight:700;font-size:14px;margin-bottom:6px;">${cityName}</div>
+            <div style="color:#fff;background:#111;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:200px;max-width:280px;">
+              <div style="font-weight:700;font-size:14px;margin-bottom:8px;">${cityName}</div>
               ${html}
             </div>
           `);
@@ -186,13 +195,21 @@ export default function MapPage() {
           }).addTo(map);
 
           const html = cityTrips.map(
-            (t) =>
-              `<a href="/trip/${t.slug}" style="color:#fff;text-decoration:none;display:block;margin:3px 0;font-size:12px;border-left:2px solid ${color(t.rating)};padding-left:6px;">${t.title} <span style="color:#888;font-size:10px;">${formatDateRange(t.date, t.end_date)}</span></a>`,
+            (t) => {
+              const year = t.date.slice(0, 4);
+              return `
+                <div style="margin:4px 0;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                  <a href="/trip/${t.slug}" style="color:#fff;text-decoration:none;font-size:12px;border-left:2px solid ${color(t.rating)};padding-left:6px;flex:1;min-width:0;" title="查看详情">
+                    <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.title}</div>
+                    <div style="color:#888;font-size:10px;">${formatDateRange(t.date, t.end_date)}</div>
+                  </a>
+                  <a href="/#year-${year}" style="color:#888;text-decoration:none;font-size:10px;padding:3px 6px;border-radius:4px;background:rgba(255,255,255,0.08);white-space:nowrap;flex-shrink:0;" title="滚动到时间轴">📍定位</a>
+                </div>`;
+            }
           ).join("");
           const popupContent = `
-            <div style="color:#fff;background:#111;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:180px;">
-              <div style="font-weight:700;font-size:14px;margin-bottom:6px;">${cityTrips[0].location}</div>
-              ${cityTrips[0].cover_image ? `<img src="${cityTrips[0].cover_image}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:6px;" />` : ""}
+            <div style="color:#fff;background:#111;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:200px;max-width:280px;">
+              <div style="font-weight:700;font-size:14px;margin-bottom:8px;">${cityTrips[0].location}</div>
               ${html}
             </div>
           `;
@@ -215,7 +232,46 @@ export default function MapPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-64px)]">
-      <div ref={mapRef} className="flex-1 w-full" role="img" aria-label="旅行足迹全屏地图" />
+      <div className="relative flex-1 w-full">
+        <div ref={mapRef} className="w-full h-full" role="img" aria-label="旅行足迹全屏地图" />
+
+        {/* Rating legend */}
+        <div className="absolute top-4 right-4 z-[1000] rounded-xl bg-black/55 backdrop-blur-xl border border-white/[0.12] px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+          <div className="text-[10px] uppercase tracking-[2px] text-white/35 mb-2.5 font-sans font-medium">评级</div>
+          <div className="flex flex-col gap-1.5">
+            {[5, 4, 3, 2, 1].map((v) => (
+              <div key={v} className="flex items-center gap-2.5">
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-white/20"
+                  style={{ backgroundColor: RATING_COLORS[v] }}
+                />
+                <span className="text-xs text-white/80 font-sans leading-none">
+                  {RATING_LABELS[v]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Zoom controls */}
+        <div className="absolute right-4 bottom-6 z-[1000] flex flex-col rounded-xl overflow-hidden bg-black/55 backdrop-blur-xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+          <button
+            onClick={() => mapInstanceRef.current?.zoomIn()}
+            className="w-9 h-9 flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-colors text-lg leading-none select-none"
+            aria-label="放大"
+          >
+            +
+          </button>
+          <div className="h-px bg-white/[0.12]" />
+          <button
+            onClick={() => mapInstanceRef.current?.zoomOut()}
+            className="w-9 h-9 flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-colors text-lg leading-none select-none"
+            aria-label="缩小"
+          >
+            −
+          </button>
+        </div>
+      </div>
       <div className="bg-canvas border-t border-hairline px-4 sm:px-8 py-4 flex gap-3 sm:gap-4 overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
         {trips.map((trip) => (
           <Link

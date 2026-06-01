@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 export default function ScrollAnimator() {
+  const pathname = usePathname();
+  const obsRef = useRef<IntersectionObserver | null>(null);
+
   useEffect(() => {
+    if (obsRef.current) {
+      obsRef.current.disconnect();
+    }
+
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -16,12 +24,19 @@ export default function ScrollAnimator() {
       { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
     );
 
-    document.querySelectorAll("[data-animate]").forEach((el) => {
-      obs.observe(el);
-    });
+    obsRef.current = obs;
 
-    return () => obs.disconnect();
-  }, []);
+    const timer = setTimeout(() => {
+      document.querySelectorAll("[data-animate]").forEach((el) => {
+        obs.observe(el);
+      });
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+      obs.disconnect();
+    };
+  }, [pathname]);
 
   return null;
 }
