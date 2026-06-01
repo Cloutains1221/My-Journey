@@ -35,8 +35,15 @@ export function dissolveDistricts(
 
   try {
     const dissolved = dissolve(featureCollection(turfFeatures));
-    if (dissolved?.features?.[0]?.geometry) {
-      return dissolved.features[0].geometry.coordinates;
+    if (dissolved?.features?.length) {
+      // Combine all dissolved features (handles disjoint parts like enclaves)
+      const allCoords: any[] = [];
+      for (const f of dissolved.features) {
+        if (f.geometry.type === "Polygon") allCoords.push(f.geometry.coordinates);
+        else if (f.geometry.type === "MultiPolygon") allCoords.push(...f.geometry.coordinates);
+      }
+      if (allCoords.length === 1) return allCoords[0]; // single Polygon
+      return allCoords; // MultiPolygon
     }
   } catch {
     /* dissolve failed — fall back to simple merge */

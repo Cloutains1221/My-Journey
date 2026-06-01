@@ -88,6 +88,7 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
     });
 
     return () => {
+      setMapReady(false);
       mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
     };
@@ -95,7 +96,7 @@ export default function HeroMap({ trips }: { trips: Trip[] }) {
 
   // --- Render city polygons + markers ---
   useEffect(() => {
-    if (!mapReady) return;
+    if (!mapReady || trips.length === 0) return;
 
     getLeaflet().then(async (L) => {
       const map = mapInstanceRef.current;

@@ -98,6 +98,7 @@ export default function MapPage() {
     });
 
     return () => {
+      setMapReady(false);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;

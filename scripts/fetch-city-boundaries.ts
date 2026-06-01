@@ -75,8 +75,9 @@ function perpendicularDist(
 function simplifyRing(
   ring: number[][],
   tolerance: number,
+  minPoints = 8,
 ): number[][] {
-  if (ring.length <= 2) return ring;
+  if (ring.length <= minPoints) return ring;
 
   let maxDist = 0;
   let maxIdx = 0;
@@ -96,9 +97,14 @@ function simplifyRing(
   }
 
   if (maxDist > tolerance) {
-    const left = simplifyRing(ring.slice(0, maxIdx + 1), tolerance);
-    const right = simplifyRing(ring.slice(maxIdx), tolerance);
+    const left = simplifyRing(ring.slice(0, maxIdx + 1), tolerance, minPoints);
+    const right = simplifyRing(ring.slice(maxIdx), tolerance, minPoints);
     return [...left.slice(0, -1), ...right];
+  }
+
+  // If simplified result is too sparse, re-simplify with lower tolerance
+  if (ring.length > minPoints && tolerance > 0.001) {
+    return simplifyRing(ring, tolerance / 3, minPoints);
   }
 
   return [first, last];
