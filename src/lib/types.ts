@@ -75,3 +75,12 @@ export const DESIRE_LABELS: Record<number, string> = {
   4: "很一般啊",
   5: "狗都不去",
 };
+
+export interface Milestone {
+  id: string;
+  title: string;
+  subtitle?: string;
+  date: string; // YYYY-MM-DD
+  icon: "school" | "middle" | "high" | "uni" | "grad";
+  stage?: string; // overrides the default stage label derived from icon
+}

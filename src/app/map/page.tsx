@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { Trip } from "@/lib/types";
 import { formatDateRange, RATING_LABELS } from "@/lib/types";
-import { matchCityBoundary } from "@/lib/city-data";
+import { matchCityBoundary, PIN_LOCATIONS } from "@/lib/city-data";
 import type { FeatureCollection } from "@/lib/city-data";
 import { wgs84ToGcj02 } from "@/lib/coords";
 
@@ -164,7 +164,7 @@ export default function MapPage() {
             }
           ).join("");
           main.bindPopup(`
-            <div style="color:#fff;background:#111;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:200px;max-width:280px;">
+            <div style="color:#fff;background:#252320;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:200px;max-width:280px;">
               <div style="font-weight:700;font-size:14px;margin-bottom:8px;">${cityName}</div>
               ${html}
             </div>
@@ -208,7 +208,7 @@ export default function MapPage() {
             }
           ).join("");
           const popupContent = `
-            <div style="color:#fff;background:#111;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:200px;max-width:280px;">
+            <div style="color:#fff;background:#252320;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:200px;max-width:280px;">
               <div style="font-weight:700;font-size:14px;margin-bottom:8px;">${cityTrips[0].location}</div>
               ${html}
             </div>
@@ -226,6 +226,25 @@ export default function MapPage() {
 
           layersRef.current.push(pulse, circle);
         }
+      });
+
+      // --- Highlighted pin markers (always visible) ---
+      PIN_LOCATIONS.forEach((pin) => {
+        const gcj = wgs84ToGcj02(pin.lat, pin.lng);
+        const pinIcon = L.divIcon({
+          className: "pin-marker",
+          html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="26" height="39"><path d="M12 0C5.37 0 0 5.37 0 12c0 7.85 9.13 19.62 12 24 2.87-4.38 12-16.15 12-24C24 5.37 18.63 0 12 0z" fill="#e8a55a" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="10" r="4" fill="#fff" opacity="0.9"/></svg>`,
+          iconSize: [26, 39],
+          iconAnchor: [13, 39],
+          popupAnchor: [0, -39],
+        });
+        const marker = L.marker([gcj.lat, gcj.lng], { icon: pinIcon }).addTo(map);
+        marker.bindPopup(`
+          <div style="color:#fff;background:#252320;padding:10px 14px;border-radius:10px;font-family:system-ui;min-width:140px;text-align:center;">
+            <div style="font-weight:700;font-size:14px;">📍 ${pin.label || pin.name}</div>
+          </div>
+        `);
+        layersRef.current.push(marker);
       });
     });
   }, [trips, mapReady]);

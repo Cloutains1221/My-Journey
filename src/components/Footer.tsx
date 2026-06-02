@@ -2,22 +2,22 @@ export default function Footer() {
   return (
     <footer className="relative mt-24 border-t border-hairline">
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-      <div className="max-w-5xl mx-auto px-8 py-12">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <span className="font-display text-lg text-ink tracking-[-0.5px]">Cloutains的旅程</span>
-            <p className="text-xs text-muted-soft mt-2 leading-relaxed">
+      <div className="max-w-5xl mx-auto px-8 py-14">
+        <div className="flex flex-col sm:flex-row gap-8 sm:gap-16">
+          <div className="sm:w-[60%]">
+            <span className="font-display text-xl text-ink tracking-[-0.5px]">Cloutains的旅程</span>
+            <p className="text-xs text-muted-soft mt-3 leading-relaxed max-w-xs">
               用脚步丈量世界，记录每一段旅程
             </p>
           </div>
-          <p className="font-display italic text-muted-soft text-sm text-center sm:text-right">
-            &ldquo;读万卷书，行万里路&rdquo;
-          </p>
-        </div>
-        <div className="mt-8 pt-6 border-t border-hairline-soft">
-          <p className="text-xs text-muted-soft text-center">
-            &copy; {new Date().getFullYear()} Cloutains
-          </p>
+          <div className="sm:w-[40%] sm:text-right flex flex-col gap-6 sm:items-end">
+            <p className="font-display text-base text-muted-soft italic leading-relaxed">
+              &ldquo;读万卷书<br />行万里路&rdquo;
+            </p>
+            <p className="text-[11px] text-muted-soft/60 font-sans">
+              &copy; {new Date().getFullYear()} Cloutains
+            </p>
+          </div>
         </div>
       </div>
     </footer>

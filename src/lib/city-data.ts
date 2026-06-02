@@ -53,18 +53,6 @@ export function stripCitySuffix(name: string): string {
 }
 
 /**
- * Extract the Chinese city name from a location string.
- * "北京, 中国" → "北京"
- * "上海市, 中国" → "上海"
- * "杭州, 浙江, 中国" → "杭州"
- */
-export function extractCityName(location: string): string {
-  const parts = location.split(/[,，、\s]+/);
-  const raw = parts[0]?.trim() ?? "";
-  return stripCitySuffix(raw);
-}
-
-/**
  * Match a trip location to a city boundary GeoJSON feature.
  * Tries exact match, then strips suffixes progressively.
  */
@@ -90,41 +78,20 @@ export function matchCityBoundary(
   return null;
 }
 
-/**
- * Generate Leaflet path style for a city boundary polygon.
- * Neon-glow dashed border on dark map backgrounds.
- */
-export function getCityPolygonStyle(rating: number) {
-  return {
-    color: getRatingColor(rating),
-    weight: 2,
-    opacity: 0.7,
-    fillColor: getRatingColor(rating),
-    fillOpacity: 0.12,
-    dashArray: "6 8",
-    className: "city-boundary",
-  };
+// ---------------------------------------------------------------------------
+// Highlighted pin locations (always shown on map, independent of trip data)
+// Coordinates in WGS-84, converted to GCJ-02 at render time for Gaode tiles
+// ---------------------------------------------------------------------------
+export interface PinLocation {
+  name: string;
+  label?: string; // display text in popup, falls back to name
+  lat: number; // WGS-84
+  lng: number; // WGS-84
 }
 
-/** Glow halo style — wider, fainter stroke behind the main boundary */
-export function getCityGlowStyle(rating: number) {
-  return {
-    color: getRatingColor(rating),
-    weight: 6,
-    opacity: 0.15,
-    fillColor: "transparent",
-    fillOpacity: 0,
-    className: "city-boundary-glow",
-  };
-}
+export const PIN_LOCATIONS: PinLocation[] = [
+  { name: "厦门", label: "厦门·家", lat: 24.4798, lng: 118.0894 },
+  { name: "福州", label: "福州·福州大学", lat: 26.0745, lng: 119.2965 },
+  { name: "新加坡", label: "新加坡·南洋理工大学", lat: 1.3521, lng: 103.8198 },
+];
 
-export function getRatingColor(rating: number): string {
-  const colors: Record<number, string> = {
-    1: "#6b7280",
-    2: "#94a3b8",
-    3: "#66bb6a",
-    4: "#ffa726",
-    5: "#ff6b6b",
-  };
-  return colors[rating] ?? "#ff6b6b";
-}

@@ -62,13 +62,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle grain overlay for depth */
+/* Subtle grain overlay for depth — below modals */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 99;
   opacity: 0.015;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
@@ -167,6 +167,20 @@ a {
   padding-right: 0.1em;
   color: var(--color-primary);
   font-weight: 400;
+}
+
+/* ── Leaflet popup dark theme ── */
+.leaflet-popup-content-wrapper {
+  background: #252320 !important;
+  color: #faf9f5 !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5) !important;
+}
+.leaflet-popup-tip {
+  background: #252320 !important;
+}
+.leaflet-popup-content {
+  color: #faf9f5;
+  margin: 0;
 }
 
 /* ── Dark mode ── */

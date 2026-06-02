@@ -25,7 +25,7 @@ export default async function TripCard({ trip, index = 0 }: { trip: Trip; index?
         <div className="w-2.5 h-2.5 rounded-full bg-hairline border-2 border-canvas group-hover:bg-primary group-hover:scale-125 transition-all duration-300" />
       </div>
 
-      <article className="flex flex-col sm:flex-row gap-0 sm:gap-5 md:gap-7 p-4 sm:p-5 md:pl-14 rounded-xl bg-surface-card border border-hairline-soft shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] hover:border-primary/20 hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08),0_8px_32px_rgba(204,120,92,0.06)] transition-all duration-500 ease-out">
+      <article className="flex flex-col sm:flex-row gap-0 sm:gap-5 md:gap-7 p-4 sm:p-5 md:pl-14 rounded-xl bg-surface-card border border-hairline-soft group-hover:border-primary/20 transition-colors duration-500">
         <div className="relative w-full h-40 sm:w-[130px] sm:h-[100px] md:w-[170px] md:h-[130px] rounded-lg overflow-hidden flex-shrink-0 bg-surface-cream-strong">
           {trip.cover_image ? (
             <img src={trip.cover_image} alt={trip.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
