@@ -109,7 +109,7 @@ export async function POST(request: Request) {
   const baseSlug = customSlug || generateSlug(title || "", date);
   const slug = await uniqueSlug(baseSlug);
   const { data, error } = await supabaseAdmin.from("trips").insert({
-    title, slug, date, end_date: end_date || null, location, city_name: city_name || null, latitude, longitude, cover_image, content, rating
+    title, slug, date, end_date: end_date || null, location, city_name: city_name || null, latitude, longitude, cover_image: cover_image || null, content, rating
   }).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

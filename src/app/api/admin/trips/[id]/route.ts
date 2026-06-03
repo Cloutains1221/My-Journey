@@ -32,7 +32,7 @@ export async function PUT(
   const { title, slug: customSlug, date, end_date, location, city_name, latitude, longitude, cover_image, content, rating } = body;
   const slug = customSlug || generateSlug(title || "", date);
   const { error } = await supabaseAdmin.from("trips").update({
-    title, slug, date, end_date: end_date || null, location, city_name: city_name || null, latitude, longitude, cover_image, content, rating
+    title, slug, date, end_date: end_date || null, location, city_name: city_name || null, latitude, longitude, cover_image: cover_image || null, content, rating
   }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   revalidatePath("/");
