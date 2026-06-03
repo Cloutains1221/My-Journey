@@ -30,7 +30,7 @@ export default function AdminClient() {
   }
 
   const fetchTrips = useCallback(async () => {
-    const res = await fetch("/api/admin/trips");
+    const res = await fetch("/api/admin/trips", { cache: "no-store" });
     if (res.ok) setTrips(await res.json());
     else setAuthenticated(false);
   }, []);
