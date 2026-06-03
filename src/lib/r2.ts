@@ -1,5 +1,6 @@
-import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 function getR2Client(): S3Client {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
@@ -43,6 +44,19 @@ export async function r2Delete(key: string): Promise<void> {
   const client = getR2Client();
   await client.send(
     new DeleteObjectCommand({ Bucket: BUCKET, Key: key }),
+  );
+}
+
+export async function r2PresignUpload(
+  key: string,
+  contentType: string,
+  expiresIn = 900,
+): Promise<string> {
+  const client = getR2Client();
+  return getSignedUrl(
+    client,
+    new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType }),
+    { expiresIn },
   );
 }
 

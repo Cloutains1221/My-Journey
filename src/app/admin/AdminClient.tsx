@@ -87,20 +87,52 @@ export default function AdminClient() {
     const files = e.target.files;
     if (!files || files.length === 0 || !editing?.id) return;
     setUploading(true);
-    const formData = new FormData();
-    formData.append("tripId", editing.id);
+    setError("");
 
-    for (const f of Array.from(files)) {
-      formData.append("files", f);
-    }
+    const publicUrls: string[] = [];
+    try {
+      for (const file of Array.from(files)) {
+        const fileName = `${Date.now()}-${file.name}`;
 
-    const res = await fetch("/api/admin/photos", { method: "POST", body: formData });
-    if (res.ok) {
-      setMessage("照片上传成功");
+        // 1. 获取签名 URL
+        const presignRes = await fetch("/api/admin/photos/presign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tripId: editing.id, fileName, contentType: file.type }),
+        });
+        if (!presignRes.ok) {
+          const err = await presignRes.json();
+          throw new Error(err.error || "获取上传凭证失败");
+        }
+        const { presignedUrl, publicUrl } = await presignRes.json();
+
+        // 2. 直传 R2
+        const uploadRes = await fetch(presignedUrl, {
+          method: "PUT",
+          body: file,
+          headers: { "Content-Type": file.type },
+        });
+        if (!uploadRes.ok) {
+          throw new Error(`上传失败: ${uploadRes.status}`);
+        }
+        publicUrls.push(publicUrl);
+      }
+
+      // 3. 注册到数据库
+      const registerRes = await fetch("/api/admin/photos/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId: editing.id, urls: publicUrls }),
+      });
+      if (!registerRes.ok) {
+        const err = await registerRes.json();
+        throw new Error(err.error || "注册照片失败");
+      }
+
+      setMessage(`照片上传成功 · ${publicUrls.length} 张`);
       fetchPhotos(editing.id);
-    } else {
-      const data = await res.json();
-      setError(data.error || "上传失败");
+    } catch (err: any) {
+      setError(err.message || "上传失败");
     }
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
