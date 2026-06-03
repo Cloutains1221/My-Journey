@@ -29,12 +29,12 @@ export default function MilestoneMarker({ milestone }: { milestone: Milestone })
         <div className="w-3 h-3 rounded-sm rotate-45 bg-accent-amber/60 ring-[5px] ring-canvas transition-all duration-500 group-hover:rotate-[135deg] group-hover:bg-accent-amber/80" />
       </div>
 
-      {/* Card — asymmetrical left-accent style */}
-      <div className="relative overflow-hidden rounded-r-lg border-l-[3px] border-accent-amber/30 hover:border-accent-amber/50 transition-colors duration-500 ml-0.5">
-        {/* Subtle left-to-right fade background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-accent-amber/[0.05] to-transparent pointer-events-none" />
+      {/* Milestone card */}
+      <div className="relative overflow-hidden rounded-lg border border-hairline-soft hover:border-accent-amber/20 transition-colors duration-500">
+        {/* Top accent stripe */}
+        <div className="absolute top-0 left-0 w-1/3 h-[2px] bg-gradient-to-r from-accent-amber/40 to-transparent" />
 
-        <div className="relative flex items-center gap-4 sm:gap-5 pl-4 pr-5 py-4">
+        <div className="relative flex items-center gap-4 sm:gap-5 px-5 py-4 bg-gradient-to-r from-accent-amber/[0.04] via-accent-amber/[0.02] to-transparent">
           {/* Icon — diamond shaped */}
           <div className="w-10 h-10 rounded-sm rotate-45 bg-accent-amber/[0.08] text-accent-amber flex items-center justify-center flex-shrink-0 group-hover:bg-accent-amber/15 transition-all duration-500">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="-rotate-45">

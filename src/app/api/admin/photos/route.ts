@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { r2Upload } from "@/lib/r2";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
@@ -24,22 +25,13 @@ export async function POST(request: Request) {
   const results = [];
 
   for (const file of files) {
-    const fileName = `${tripId}/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from("trip-photos")
-      .upload(fileName, file);
-
-    if (uploadError) {
-      return NextResponse.json({ error: uploadError.message }, { status: 500 });
-    }
-
-    const { data: urlData } = supabaseAdmin.storage
-      .from("trip-photos")
-      .getPublicUrl(fileName);
+    const key = `${tripId}/${Date.now()}-${file.name}`;
+    const bytes = await file.arrayBuffer();
+    const publicUrl = await r2Upload(key, Buffer.from(bytes), file.type);
 
     const { error: dbError } = await supabaseAdmin.from("photos").insert({
       trip_id: tripId,
-      url: urlData.publicUrl,
+      url: publicUrl,
       caption: null,
       sort_order: 0,
     });
@@ -48,7 +40,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
-    results.push(urlData.publicUrl);
+    results.push(publicUrl);
   }
 
   if (trip?.slug) {

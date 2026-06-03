@@ -83,31 +83,6 @@ export default function AdminClient() {
     else setError("删除失败");
   }
 
-  async function compressImage(file: File): Promise<File> {
-    if (file.size < 2 * 1024 * 1024 && file.type === "image/jpeg") return file;
-
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const maxSide = 1920;
-        let w = img.width;
-        let h = img.height;
-        if (w > maxSide || h > maxSide) {
-          if (w > h) { h = Math.round(h * maxSide / w); w = maxSide; }
-          else { w = Math.round(w * maxSide / h); h = maxSide; }
-        }
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
-        canvas.toBlob((blob) => {
-          resolve(new File([blob!], file.name, { type: "image/jpeg" }));
-        }, "image/jpeg", 0.85);
-      };
-      img.src = URL.createObjectURL(file);
-    });
-  }
-
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files || files.length === 0 || !editing?.id) return;
@@ -116,8 +91,7 @@ export default function AdminClient() {
     formData.append("tripId", editing.id);
 
     for (const f of Array.from(files)) {
-      const compressed = await compressImage(f);
-      formData.append("files", compressed);
+      formData.append("files", f);
     }
 
     const res = await fetch("/api/admin/photos", { method: "POST", body: formData });

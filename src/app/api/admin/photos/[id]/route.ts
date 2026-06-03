@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { r2Delete, r2GetKeyFromUrl } from "@/lib/r2";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
@@ -23,9 +24,15 @@ export async function DELETE(
     .single();
 
   if (photo?.url) {
-    const url = new URL(photo.url);
-    const path = url.pathname.replace("/storage/v1/object/public/trip-photos/", "");
-    await supabaseAdmin.storage.from("trip-photos").remove([path]);
+    try {
+      const key = r2GetKeyFromUrl(photo.url);
+      await r2Delete(key);
+    } catch {
+      // if URL is old Supabase format, try deleting from Supabase storage
+      const url = new URL(photo.url);
+      const path = url.pathname.replace("/storage/v1/object/public/trip-photos/", "");
+      await supabaseAdmin.storage.from("trip-photos").remove([path]);
+    }
   }
 
   const { error } = await supabaseAdmin.from("photos").delete().eq("id", id);
