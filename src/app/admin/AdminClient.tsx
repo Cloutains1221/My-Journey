@@ -432,7 +432,7 @@ export default function AdminClient() {
                   <p className="text-sm text-muted">
                     {uploading ? "压缩并上传中..." : "拖拽图片到此处或点击上传"}
                   </p>
-                  <p className="text-xs text-muted-soft mt-1">支持 JPG, PNG, WebP · 大图自动压缩至 1920px · 可批量选择</p>
+                  <p className="text-xs text-muted-soft mt-1">支持 JPG, PNG, WebP · 原始画质上传 · 可批量选择</p>
                   <input
                     ref={fileInputRef}
                     type="file"
